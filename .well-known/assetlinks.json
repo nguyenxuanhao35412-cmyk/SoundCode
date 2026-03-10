@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.sound_code_ten.twa",
+        "sha256_cert_fingerprints": ["E1:76:49:19:54:56:C0:DD:47:58:95:2C:0B:82:35:ED:1A:28:AF:2A:1F:37:51:59:6C:39:D6:5F:16:F9:D8:C4"]
+      }
+    }]
