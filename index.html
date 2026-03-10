@@ -11,44 +11,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
-        /* 1. BIẾN MẶC ĐỊNH (DARK MODE) */
+        /* BIẾN MẶC ĐỊNH */
         :root {
-            --bg-main: #0b0b0f;
-            --bg-container: #16161d;
-            --bg-section: #1f1f29;
-            --bg-input: #0a0a0e;
-            --text-main: #e0e0e0;
-            --text-title: #ffffff;
-            --text-muted: #888888;
-            --border-color: #2d2d3d;
-            
-            /* TÔNG MÀU CAM AMBER */
-            --btn-bg: #FF9500;
-            --btn-text: #000000; 
-            --btn-hover: #e68600;
-            --laser-color: #FF9500;
-            --highlight-glow: rgba(255, 149, 0, 0.2);
+            --bg-main: #0b0b0f; --bg-container: #16161d; --bg-section: #1f1f29; --bg-input: #0a0a0e;
+            --text-main: #e0e0e0; --text-title: #ffffff; --text-muted: #888888; --border-color: #2d2d3d;
+            --btn-bg: #FF9500; --btn-text: #000000; --btn-hover: #e68600;
+            --laser-color: #FF9500; --highlight-glow: rgba(255, 149, 0, 0.2);
         }
 
-        /* 2. CHẾ ĐỘ SÁNG (LIGHT MODE) */
         body.light-mode {
-            --bg-main: #f0f2f5;
-            --bg-container: #ffffff;
-            --bg-section: #f8f9fa;
-            --bg-input: #ffffff;
-            --text-main: #333333;
-            --text-title: #1a1a1a;
-            --text-muted: #666666;
-            --border-color: #e4e6eb;
-            --highlight-glow: rgba(255, 149, 0, 0.15);
-            --btn-text: #ffffff; 
+            --bg-main: #f0f2f5; --bg-container: #ffffff; --bg-section: #f8f9fa; --bg-input: #ffffff;
+            --text-main: #333333; --text-title: #1a1a1a; --text-muted: #666666; --border-color: #e4e6eb;
+            --highlight-glow: rgba(255, 149, 0, 0.15); --btn-text: #ffffff; 
         }
 
-        /* Nút Chuyển Giao Diện */
         .theme-btn { position: absolute; top: 20px; right: 20px; background: var(--bg-section); color: var(--text-title); border: 1px solid var(--border-color); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: 600; font-family: 'Inter', sans-serif; transition: 0.3s; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 10; }
         .theme-btn:hover { border-color: var(--btn-bg); color: var(--btn-bg); }
 
-        /* GIAO DIỆN CHUNG */
         body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); text-align: center; padding: 20px; margin: 0; transition: background-color 0.4s, color 0.4s; }
         .container { max-width: 700px; margin: 40px auto; background: var(--bg-container); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border-top: 4px solid var(--btn-bg); position: relative; transition: background-color 0.4s; }
         h1 { margin-top: 0; color: var(--text-title); letter-spacing: 2px; text-transform: uppercase; font-size: 28px; font-weight: 800; }
@@ -56,7 +35,6 @@
         .section { margin-bottom: 40px; padding: 25px; background: var(--bg-section); border-radius: 15px; border: 1px solid var(--border-color); transition: background-color 0.4s; }
         h2 { font-size: 16px; margin-top: 0; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); margin-bottom: 20px; font-weight: 600; }
         
-        /* Input & Button */
         input[type="text"] { width: 85%; padding: 15px; background: var(--bg-input); border: 2px solid var(--btn-bg); color: var(--text-main); font-size: 16px; border-radius: 10px; margin-bottom: 15px; transition: 0.3s; box-shadow: 0 0 10px var(--highlight-glow); font-family: 'Inter', sans-serif; }
         input[type="text"]:focus { outline: none; border-color: var(--btn-hover); box-shadow: 0 0 20px rgba(255, 149, 0, 0.4); }
         .btn-primary { background: var(--btn-bg); color: var(--btn-text); border: none; padding: 14px 32px; font-size: 16px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border-radius: 10px; margin: 8px 5px; transition: all 0.2s ease-in-out; box-shadow: 0 6px 15px var(--highlight-glow); font-family: 'Inter', sans-serif; }
@@ -64,18 +42,48 @@
         .logo-upload-btn { background: var(--bg-section); color: var(--text-main); padding: 10px 20px; border-radius: 8px; font-size: 14px; cursor: pointer; display: inline-block; margin-bottom: 15px; border: 1px dashed var(--text-muted); transition: 0.3s; font-family: 'Inter', sans-serif; font-weight: 600; }
         .logo-upload-btn:hover { border-color: var(--btn-bg); color: var(--btn-bg); }
         
-        /* Canvas & DropZone */
         #encodeCanvas { background: var(--bg-main); margin-top: 25px; border-radius: 15px; max-width: 100%; display: none; }
         .drop-zone { width: 85%; margin: 20px auto; padding: 35px 20px; border: 2px dashed var(--btn-bg); border-radius: 15px; background: rgba(255, 149, 0, 0.05); color: var(--text-title); font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
         .drop-zone.hover { border-color: var(--btn-hover); background: rgba(255, 149, 0, 0.15); transform: scale(1.02); }
         
-        /* Scanner Live */
-        .scanner-container { position: relative; width: 100%; max-width: 500px; margin: 20px auto; display: none; border-radius: 15px; overflow: hidden; border: 2px solid var(--btn-bg); background: #000; box-shadow: 0 0 20px var(--highlight-glow); }
-        video { width: 100%; display: block; object-fit: cover; }
-        .laser { position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: var(--laser-color); box-shadow: 0 0 15px 3px var(--laser-color); animation: scanline 2.5s infinite ease-in-out; }
-        @keyframes scanline { 0%, 100% { transform: translateY(-50px); } 50% { transform: translateY(50px); } }
+        /* ========================================= */
+        /* UI QUÉT CAMERA TOÀN MÀN HÌNH MỚI          */
+        /* ========================================= */
+        .scanner-container { 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+            display: none; z-index: 9999; background: #000; 
+        }
+        .scanner-container video { 
+            width: 100%; height: 100%; object-fit: cover; 
+        }
+        /* Nút Đóng lơ lửng */
+        .close-btn { 
+            position: absolute; top: 30px; right: 20px; background: rgba(0,0,0,0.6); 
+            color: #fff; border: 2px solid #fff; padding: 10px 20px; border-radius: 30px; 
+            font-weight: bold; cursor: pointer; z-index: 10000; font-family: 'Inter', sans-serif; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .close-btn:hover { background: #ff3b30; border-color: #ff3b30; }
         
-        /* Box Kết Quả */
+        /* Khung ngắm & Hiệu ứng tối xung quanh */
+        .scan-frame { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            width: 90%; max-width: 450px; height: 180px; 
+            border: 3px solid var(--btn-bg); border-radius: 20px; z-index: 9999; 
+            box-shadow: 0 0 0 10000px rgba(0,0,0,0.75); /* Đổ bóng khổng lồ để làm tối phần rìa */
+            overflow: hidden;
+        }
+        .laser { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 3px; 
+            background: var(--laser-color); box-shadow: 0 0 15px 4px var(--laser-color); 
+            animation: scanline 2.5s infinite ease-in-out; 
+        }
+        @keyframes scanline { 
+            0%, 100% { transform: translateY(0); opacity: 0; } 
+            10%, 90% { opacity: 1; } 
+            50% { transform: translateY(174px); } 
+        }
+        
         .result-box { margin-top: 25px; background: var(--bg-input); padding: 20px; border-radius: 12px; border: 2px solid var(--btn-bg); display: none; font-size: 16px; box-shadow: 0 0 15px var(--highlight-glow);}
         .result-link { color: var(--btn-bg); font-weight: 800; font-size: 22px; display: block; margin-top: 12px; text-decoration: underline; }
     </style>
@@ -87,16 +95,13 @@
 
 <div class="container">
     <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀️ Light Mode</button>
-    
-    <h1>Soundcode <span class="badge">V1.5 FULL</span></h1>
+    <h1>Soundcode <span class="badge">V1.6 LENS</span></h1>
 
     <div class="section">
         <h2>1. Tạo mã Soundcode</h2>
-        
-        <label for="logoInput" class="logo-upload-btn">Chèn Logo / Avatar (Tùy chọn)</label>
+        <label for="logoInput" class="logo-upload-btn">🖼️ Chèn Logo / Avatar (Tùy chọn)</label>
         <input type="file" id="logoInput" accept="image/*" style="display: none;">
         <span id="logoStatus" style="font-size: 13px; color: var(--text-muted); margin-left: 10px; display: block; margin-bottom: 15px;">Chưa chọn ảnh (Sẽ dùng vòng tròn mặc định)</span>
-
         <input type="text" id="linkInput" placeholder="Dán link Facebook của bạn...">
         <br>
         <button class="btn-primary" onclick="generateSoundcode()">Mã hóa & Lưu</button>
@@ -107,7 +112,6 @@
 
     <div class="section" style="margin-bottom: 0;">
         <h2>2. Máy quét Soundcode</h2>
-        
         <div id="dropZone" class="drop-zone">
             <span id="dropText">📁 Kéo thả ảnh mã vào đây hoặc click tải lên</span>
             <input type="file" id="fileInput" accept="image/*" style="display: none;">
@@ -121,12 +125,15 @@
 
         <div style="margin: 15px 0; color: var(--text-muted); font-size: 12px; font-weight: bold;">— HOẶC —</div>
 
-        <button class="btn-primary" onclick="startCamera()" id="startCamBtn">📸 Bật Camera Trực Tiếp</button>
-        <button class="btn-primary" style="display:none; background: #ff3b30; color:#fff;" onclick="stopCamera()" id="stopCamBtn">⏹ Đóng Camera</button>
+        <button class="btn-primary" onclick="startCamera()" id="startCamBtn">📸 Bật Camera Quét Mã</button>
         
         <div class="scanner-container" id="scannerContainer">
+            <button class="close-btn" onclick="stopCamera()">❌ ĐÓNG</button>
             <video id="videoFeed" autoplay playsinline></video>
-            <div class="laser"></div>
+            
+            <div class="scan-frame">
+                <div class="laser"></div>
+            </div>
         </div>
         
         <canvas id="hiddenScanCanvas" style="display: none;"></canvas>
@@ -135,42 +142,25 @@
 </div>
 
 <script>
-    // --- CHUYỂN ĐỔI THEME SÁNG / TỐI ---
     function toggleTheme() {
-        const body = document.body;
-        const btn = document.getElementById('themeBtn');
+        const body = document.body; const btn = document.getElementById('themeBtn');
         body.classList.toggle('light-mode');
-        if (body.classList.contains('light-mode')) {
-            btn.innerText = "🌙 Dark Mode";
-        } else {
-            btn.innerText = "☀️ Light Mode";
-        }
-        // Nếu đã tạo mã, vẽ lại mã vạch cho đúng màu nền mới
-        if(document.getElementById("encodeCanvas").style.display === "inline-block") {
-            drawBarcodeGraphics(window.currentSecretId);
-        }
+        btn.innerText = body.classList.contains('light-mode') ? "🌙 Dark Mode" : "☀️ Light Mode";
+        if(document.getElementById("encodeCanvas").style.display === "inline-block") drawBarcodeGraphics(window.currentSecretId);
     }
 
-    // --- CẤU HÌNH FIREBASE ---
     const firebaseConfig = {
-        apiKey: "AIzaSyAV09lR1qTD1BpcUDjXwzB-TCgjDt60jy8",
-        authDomain: "soundcode-35412.firebaseapp.com",
+        apiKey: "AIzaSyAV09lR1qTD1BpcUDjXwzB-TCgjDt60jy8", authDomain: "soundcode-35412.firebaseapp.com",
         databaseURL: "https://soundcode-35412-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "soundcode-35412",
-        storageBucket: "soundcode-35412.firebasestorage.app",
-        messagingSenderId: "611646314484",
-        appId: "1:611646314484:web:d9f0251c91c6ad6b680ba1"
+        projectId: "soundcode-35412", storageBucket: "soundcode-35412.firebasestorage.app",
+        messagingSenderId: "611646314484", appId: "1:611646314484:web:d9f0251c91c6ad6b680ba1"
     };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig); const db = firebase.database();
 
-    // --- UPLOAD LOGO CÁ NHÂN ---
-    let userCustomLogo = null;
-    window.currentSecretId = null; // Lưu lại ID để vẽ lại khi đổi Theme
+    let userCustomLogo = null; window.currentSecretId = null; 
 
     document.getElementById('logoInput').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+        const file = e.target.files[0]; if (!file) return;
         const reader = new FileReader();
         reader.onload = function(event) {
             userCustomLogo = new Image();
@@ -183,95 +173,55 @@
         reader.readAsDataURL(file);
     });
 
-    // --- TẠO MÃ SOUNDCODE ---
     async function generateSoundcode() {
-        const url = document.getElementById("linkInput").value.trim();
-        const log = document.getElementById("encoderLog");
+        const url = document.getElementById("linkInput").value.trim(); const log = document.getElementById("encoderLog");
         if (!url || (!url.includes("facebook.com") && !url.includes("fb.com"))) { alert("Vui lòng nhập link Facebook hợp lệ!"); return; }
-        log.innerText = "⏳ Đang đồng bộ lên Cloud...";
-        log.style.color = "var(--text-main)";
-        
+        log.innerText = "⏳ Đang đồng bộ lên Cloud..."; log.style.color = "var(--text-main)";
         try {
             const snap = await db.ref('soundCodes').orderByChild('url').equalTo(url).once('value');
             let id = snap.exists() ? Object.keys(snap.val())[0] : null;
-            if (!id) {
-                id = ""; for (let i = 0; i < 15; i++) id += Math.floor(Math.random() * 10);
-                await db.ref('soundCodes/' + id).set({ url, createdAt: new Date().toISOString() });
-            }
-            window.currentSecretId = id;
-            log.innerText = "✨ Đã tạo mã thành công!";
-            log.style.color = "var(--btn-bg)";
+            if (!id) { id = ""; for (let i = 0; i < 15; i++) id += Math.floor(Math.random() * 10); await db.ref('soundCodes/' + id).set({ url, createdAt: new Date().toISOString() }); }
+            window.currentSecretId = id; log.innerText = "✨ Đã tạo mã thành công!"; log.style.color = "var(--btn-bg)";
             drawBarcodeGraphics(id);
         } catch (e) { log.innerText = "❌ Lỗi kết nối máy chủ!"; log.style.color = "#ff3b30"; }
     }
 
-    // --- VẼ MÃ VẠCH (TỰ ĐỘNG ĐỔI MÀU THEO THEME) ---
     function drawBarcodeGraphics(id) {
         if (!id) return;
-        const canvas = document.getElementById("encodeCanvas");
-        const ctx = canvas.getContext("2d");
-        
-        // Kiểm tra xem web đang bật Light Mode hay Dark Mode
+        const canvas = document.getElementById("encodeCanvas"); const ctx = canvas.getContext("2d");
         const isLightMode = document.body.classList.contains('light-mode');
-        const bgColor = isLightMode ? "#ffffff" : "#000000";
-        const fgColor = isLightMode ? "#000000" : "#ffffff";
+        const bgColor = isLightMode ? "#ffffff" : "#000000"; const fgColor = isLightMode ? "#000000" : "#ffffff";
+        ctx.fillStyle = bgColor; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const cy = canvas.height/2; const logoX = 65; const logoRadius = 40;
 
-        ctx.fillStyle = bgColor; 
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        const cy = canvas.height/2;
-        const logoX = 65; const logoRadius = 40;
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(logoX, cy, logoRadius, 0, Math.PI * 2);
-        
+        ctx.save(); ctx.beginPath(); ctx.arc(logoX, cy, logoRadius, 0, Math.PI * 2);
         if (userCustomLogo) {
-            ctx.clip();
-            const aspect = userCustomLogo.width / userCustomLogo.height;
-            let drawW, drawH;
-            if (aspect > 1) { drawH = logoRadius * 2; drawW = drawH * aspect; } 
-            else { drawW = logoRadius * 2; drawH = drawW / aspect; }
+            ctx.clip(); const aspect = userCustomLogo.width / userCustomLogo.height; let drawW, drawH;
+            if (aspect > 1) { drawH = logoRadius * 2; drawW = drawH * aspect; } else { drawW = logoRadius * 2; drawH = drawW / aspect; }
             ctx.drawImage(userCustomLogo, logoX - drawW/2, cy - drawH/2, drawW, drawH);
-        } else {
-            ctx.fillStyle = fgColor;
-            ctx.fill();
-        }
+        } else { ctx.fillStyle = fgColor; ctx.fill(); }
         ctx.restore();
 
-        ctx.fillStyle = fgColor;
-        let x = 145;
+        ctx.fillStyle = fgColor; let x = 145;
         for (let i = -1; i <= 15; i++) {
             let hR = (i === -1 || i === 15) ? 1.0 : (parseInt(id[i]) + 1) / 10;
-            let h = 55 * hR;
-            ctx.beginPath(); ctx.roundRect(x, cy - h, 8, h * 2, 4); ctx.fill();
-            x += 22;
+            let h = 55 * hR; ctx.beginPath(); ctx.roundRect(x, cy - h, 8, h * 2, 4); ctx.fill(); x += 22;
         }
-        
-        canvas.style.border = `4px solid ${fgColor}`;
-        canvas.style.display = "inline-block";
-        document.getElementById("dlBtn").style.display = "inline-block";
+        canvas.style.border = `4px solid ${fgColor}`; canvas.style.display = "inline-block"; document.getElementById("dlBtn").style.display = "inline-block";
     }
 
     function downloadCode() {
-        const link = document.createElement("a");
-        link.download = "Soundcode.png";
-        link.href = document.getElementById("encodeCanvas").toDataURL();
-        link.click();
+        const link = document.createElement("a"); link.download = "Soundcode.png";
+        link.href = document.getElementById("encodeCanvas").toDataURL(); link.click();
     }
 
-    // --- MÁY QUÉT: KÉO THẢ ẢNH & NÚT ĐỌC ---
-    const dropZone = document.getElementById('dropZone');
-    const fileInput = document.getElementById('fileInput');
-    const scanCanvas = document.getElementById('hiddenScanCanvas');
-    const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
+    const dropZone = document.getElementById('dropZone'); const fileInput = document.getElementById('fileInput');
+    const scanCanvas = document.getElementById('hiddenScanCanvas'); const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
 
     dropZone.onclick = () => fileInput.click();
     dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('hover'); });
     dropZone.addEventListener('dragleave', () => dropZone.classList.remove('hover'));
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault(); dropZone.classList.remove('hover');
-        if (e.dataTransfer.files[0]) handleImageFile(e.dataTransfer.files[0]);
-    });
+    dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('hover'); if (e.dataTransfer.files[0]) handleImageFile(e.dataTransfer.files[0]); });
     fileInput.onchange = (e) => { if (e.target.files[0]) handleImageFile(e.target.files[0]); };
 
     function handleImageFile(file) {
@@ -279,12 +229,9 @@
         reader.onload = (event) => {
             const img = new Image();
             img.onload = () => {
-                document.getElementById('previewImg').src = img.src;
-                document.getElementById('previewContainer').style.display = "block";
-                document.getElementById('startScanActionBtn').style.display = "inline-block";
-                document.getElementById('decodeResult').style.display = "none";
-                scanCanvas.width = img.width; scanCanvas.height = img.height;
-                scanCtx.drawImage(img, 0, 0);
+                document.getElementById('previewImg').src = img.src; document.getElementById('previewContainer').style.display = "block";
+                document.getElementById('startScanActionBtn').style.display = "inline-block"; document.getElementById('decodeResult').style.display = "none";
+                scanCanvas.width = img.width; scanCanvas.height = img.height; scanCtx.drawImage(img, 0, 0);
             };
             img.src = event.target.result;
         };
@@ -292,38 +239,38 @@
     }
 
     function executeStaticScan() {
-        document.getElementById('startScanActionBtn').style.display = "none";
-        document.getElementById('decodeResult').style.display = "block";
+        document.getElementById('startScanActionBtn').style.display = "none"; document.getElementById('decodeResult').style.display = "block";
         document.getElementById('linkContainer').innerHTML = "<span style='color: var(--btn-bg);'>⏳ Đang phân tích sóng âm hình ảnh...</span>";
         setTimeout(() => { attemptDecode(true); }, 1200);
     }
 
-    // --- MÁY QUÉT: CAMERA LIVE ---
-    const video = document.getElementById('videoFeed');
-    let isScanning = false;
+    // --- CẬP NHẬT: LOGIC CAMERA TOÀN MÀN HÌNH ---
+    const video = document.getElementById('videoFeed'); let isScanning = false;
 
     async function startCamera() {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: 1280 } });
+            // Mở camera độ phân giải cao
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } });
             video.srcObject = stream;
+            
+            // Hiện cửa sổ Full-screen
             document.getElementById('scannerContainer').style.display = "block";
-            document.getElementById('startCamBtn').style.display = "none";
-            document.getElementById('stopCamBtn').style.display = "inline-block";
-            document.getElementById('dropZone').style.display = "none";
-            document.getElementById('previewContainer').style.display = "none";
+            
+            // Reset lại hộp kết quả (nếu có)
             document.getElementById('decodeResult').style.display = "none";
+            document.getElementById('linkContainer').innerHTML = "";
+            
             isScanning = true;
             requestAnimationFrame(scanLoop);
-        } catch (e) { alert("Không thể mở Camera. Vui lòng cấp quyền!"); }
+        } catch (e) { alert("Không thể mở Camera. Vui lòng cấp quyền trong trình duyệt!"); }
     }
 
     function stopCamera() {
         isScanning = false;
         if(video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+        
+        // Ẩn cửa sổ Full-screen
         document.getElementById('scannerContainer').style.display = "none";
-        document.getElementById('startCamBtn').style.display = "inline-block";
-        document.getElementById('stopCamBtn').style.display = "none";
-        document.getElementById('dropZone').style.display = "block";
     }
 
     function scanLoop() {
@@ -336,10 +283,8 @@
         setTimeout(() => requestAnimationFrame(scanLoop), 200);
     }
 
-    // --- BỘ ÓC AI (ĐỌC ĐƯỢC CẢ MÃ NỀN ĐEN & TRẮNG) ---
     function attemptDecode(isStaticScan) {
         const data = scanCtx.getImageData(0, scanCanvas.height/2, scanCanvas.width, 1).data;
-        
         let edgeBrightness = 0;
         for(let i=0; i<10; i++) { edgeBrightness += (data[i*4] + data[i*4+1] + data[i*4+2]) / 3; }
         edgeBrightness = edgeBrightness / 10;
@@ -349,14 +294,12 @@
         for(let x=0; x<scanCanvas.width; x++) {
             let p = (data[x*4] + data[x*4+1] + data[x*4+2]) / 3;
             let isBarPixel = isWhiteBackground ? (p < 100) : (p > 150);
-            
             if(isBarPixel && !inB) { inB=true; start=x; }
             else if(!isBarPixel && inB) { inB=false; if(x-start>2 && x-start<45) bars.push({s:start, e:x}); }
         }
         
         if(bars.length >= 17) {
-            let bP = bars.slice(-17);
-            let id = "";
+            let bP = bars.slice(-17); let id = "";
             let refH = getH(Math.floor((bP[0].s+bP[0].e)/2), isWhiteBackground);
             for(let i=1; i<16; i++) {
                 let h = getH(Math.floor((bP[i].s+bP[i].e)/2), isWhiteBackground);
@@ -372,17 +315,9 @@
     }
 
     function getH(x, isWhiteBackground) {
-        const img = scanCtx.getImageData(x, 0, 1, scanCanvas.height).data;
-        const mid = scanCanvas.height/2;
-        let h = 0;
-        for(let y=mid; y>=0; y--) {
-            let p = (img[y*4] + img[y*4+1] + img[y*4+2]) / 3;
-            if(isWhiteBackground ? (p < 100) : (p > 150)) h++; else break;
-        }
-        for(let y=mid+1; y<scanCanvas.height; y++) {
-            let p = (img[y*4] + img[y*4+1] + img[y*4+2]) / 3;
-            if(isWhiteBackground ? (p < 100) : (p > 150)) h++; else break;
-        }
+        const img = scanCtx.getImageData(x, 0, 1, scanCanvas.height).data; const mid = scanCanvas.height/2; let h = 0;
+        for(let y=mid; y>=0; y--) { let p = (img[y*4] + img[y*4+1] + img[y*4+2]) / 3; if(isWhiteBackground ? (p < 100) : (p > 150)) h++; else break; }
+        for(let y=mid+1; y<scanCanvas.height; y++) { let p = (img[y*4] + img[y*4+1] + img[y*4+2]) / 3; if(isWhiteBackground ? (p < 100) : (p > 150)) h++; else break; }
         return h;
     }
 
@@ -393,10 +328,11 @@
         try {
             const snap = await db.ref('soundCodes/'+id).once('value');
             if(snap.exists()) {
+                // Đóng camera Full-screen ngay lập tức khi tìm thấy mã
                 stopCamera();
                 if(navigator.vibrate) navigator.vibrate(200);
-                document.getElementById("decodeResult").style.display = "block";
                 
+                document.getElementById("decodeResult").style.display = "block";
                 const showResultHTML = `
                     <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 5px;">Soundcode nhận diện thành công:</p>
                     <a href="${snap.val().url}" target="_blank" class="result-link">🚀 MỞ FACEBOOK CÁ NHÂN</a>
@@ -409,6 +345,8 @@
                     }, 1000);
                 } else {
                     linkContainer.innerHTML = showResultHTML;
+                    // Tự động cuộn trang xuống phần kết quả
+                    document.getElementById("decodeResult").scrollIntoView({ behavior: 'smooth' });
                 }
             } else {
                 if (isStaticScan) {
@@ -425,5 +363,4 @@
     }
 </script>
 </body>
-
 </html>
