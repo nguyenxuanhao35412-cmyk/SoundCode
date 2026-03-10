@@ -371,11 +371,7 @@ Bấm "Đồng ý" để bắt đầu trải nghiệm nhé!
         }
         isChecking = false;
     }
-    window.addEventListener('load', () => {
-if (!localStorage.getItem('soundcode_confirmed')) {
-document.getElementById('termsOverlay').style.display = 'flex';
-}
-});
+
 
 // 1. Sếp đặt số phiên bản điều khoản hiện tại ở đây
 // Mỗi lần sếp cập nhật nội dung điều khoản mới, sếp chỉ cần tăng số này lên (ví dụ từ 1 lên 2)
@@ -400,6 +396,7 @@ window.location.href = "about:blank";
 </script>
 </body>
 </html>
+
 
 
 
