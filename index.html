@@ -187,201 +187,229 @@ Chào mừng sếp đến với SoundCode!
 </div>
 
 <script>
-// 1. Cấu hình Font và Giao diện
-function toggleTheme() {
-const body = document.body; const btn = document.getElementById('themeBtn');
-body.classList.toggle('light-mode');
-btn.innerText = body.classList.contains('light-mode') ? "GIAO DIỆN TỐI" : "GIAO DIỆN SÁNG";
-if(window.currentSecretId) drawBarcodeGraphics(window.currentSecretId);
+    function toggleTheme() {
+        const body = document.body; const btn = document.getElementById('themeBtn');
+        body.classList.toggle('light-mode');
+        btn.innerText = body.classList.contains('light-mode') ? "GIAO DIỆN TỐI" : "GIAO DIỆN SÁNG";
+        if(window.currentSecretId) drawBarcodeGraphics(window.currentSecretId);
+    }
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAV09lR1qTD1BpcUDjXwzB-TCgjDt60jy8",
+        authDomain: "soundcode-35412.firebaseapp.com",
+        databaseURL: "https://soundcode-35412-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "soundcode-35412",
+        storageBucket: "soundcode-35412.firebasestorage.app",
+        messagingSenderId: "611646314484",
+        appId: "1:611646314484:web:d9f0251c91c6ad6b680ba1"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    window.currentSecretId = null; 
+
+    async function generateSoundcode() {
+        const url = document.getElementById("linkInput").value.trim();
+        const fbRegex = /(facebook\.com|fb\.com|fb\.watch)/;
+        if (!url || !fbRegex.test(url.toLowerCase())) { alert("Link Facebook không hợp lệ!"); return; }
+        try {
+            const snap = await db.ref('soundCodes').orderByChild('url').equalTo(url).once('value');
+            let id = snap.exists() ? Object.keys(snap.val())[0] : null;
+            if (!id) {
+                id = ""; for (let i = 0; i < 15; i++) id += Math.floor(Math.random() * 10);
+                await db.ref('soundCodes/' + id).set({ url, createdAt: new Date().toISOString() });
+            }
+            window.currentSecretId = id; drawBarcodeGraphics(id);
+        } catch (e) { alert("Lỗi kết nối!"); }
+    }
+
+    // Logo 6 vạch có Safe Zone
+    function drawBrandLogo(ctx, x, y, radius, color) {
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+
+        ctx.fillStyle = "#FF9500";
+        const barW = 5.2; 
+        const gap = 6.8; 
+        const bars = [14, 42, 22, 48, 30, 16]; 
+        
+        const totalW = (barW * bars.length) + (gap * (bars.length - 1));
+        let startX = x - totalW / 2;
+        
+        bars.forEach(h => {
+            ctx.beginPath();
+            ctx.roundRect(startX, y - h/2, barW, h, 2);
+            ctx.fill();
+            startX += barW + gap;
+        });
+    }
+
+    function drawBarcodeGraphics(id) {
+        const canvas = document.getElementById("encodeCanvas"); const ctx = canvas.getContext("2d");
+        const isLight = document.body.classList.contains('light-mode');
+        const bgColor = isLight ? "#ffffff" : "#000000"; const fgColor = isLight ? "#000000" : "#ffffff";
+        
+        ctx.fillStyle = bgColor; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const cy = canvas.height/2; const logoX = 65; const logoRadius = 40;
+
+        drawBrandLogo(ctx, logoX, cy, logoRadius, fgColor);
+
+        ctx.fillStyle = fgColor; let startX = 145;
+        for (let i = -1; i <= 15; i++) {
+            let hR = (i === -1 || i === 15) ? 1.0 : (parseInt(id[i]) + 1) / 10;
+            let h = 55 * hR; ctx.beginPath(); ctx.roundRect(startX, cy - h, 8, h * 2, 4); ctx.fill(); startX += 22;
+        }
+        canvas.style.display = "inline-block"; document.getElementById("dlBtn").style.display = "inline-block";
+    }
+
+    function downloadCode() {
+        const link = document.createElement("a"); link.download = "Soundcode.png";
+        link.href = document.getElementById("encodeCanvas").toDataURL(); link.click();
+    }
+
+    const dropZone = document.getElementById('dropZone'); const fileInput = document.getElementById('fileInput');
+    const scanCanvas = document.getElementById('hiddenScanCanvas'); const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
+    dropZone.onclick = () => fileInput.click();
+    fileInput.onchange = (e) => { if (e.target.files[0]) handleImageFile(e.target.files[0]); };
+    function handleImageFile(file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                document.getElementById('previewImg').src = img.src;
+                document.getElementById('previewContainer').style.display = "block";
+                scanCanvas.width = img.width; scanCanvas.height = img.height;
+                scanCtx.drawImage(img, 0, 0);
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+    function executeStaticScan() {
+        document.getElementById('decodeResult').style.display = "block";
+        document.getElementById('linkContainer').innerHTML = "Đang phân tích...";
+        setTimeout(() => attemptDecode(true), 1000);
+    }
+    
+    const video = document.getElementById('videoFeed'); let isScanning = false;
+    async function startCamera() {
+        try {
+            document.getElementById("decodeResult").style.display = "none"; // Ẩn lỗi cũ khi quét lại
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 } } });
+            video.srcObject = stream;
+            document.getElementById('scannerContainer').style.display = "block";
+            isScanning = true; requestAnimationFrame(scanLoop);
+        } catch (e) { alert("Lỗi Camera!"); }
+    }
+    function stopCamera() {
+        isScanning = false; if(video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+        document.getElementById('scannerContainer').style.display = "none";
+    }
+    function scanLoop() {
+        if(!isScanning) return;
+        if(video.videoWidth > 0) {
+            scanCanvas.width = video.videoWidth; scanCanvas.height = video.videoHeight;
+            scanCtx.drawImage(video, 0, 0); attemptDecode(false);
+        }
+        setTimeout(() => requestAnimationFrame(scanLoop), 200);
+    }
+    
+    function attemptDecode(isStatic) {
+        const data = scanCtx.getImageData(0, scanCanvas.height/2, scanCanvas.width, 1).data;
+        let edge = 0; for(let i=0; i<10; i++) edge += (data[i*4] + data[i*4+1] + data[i*4+2]) / 3;
+        const isWhite = (edge/10) > 127;
+        let bars = []; let inB = false; let s = 0;
+        for(let x=0; x<scanCanvas.width; x++) {
+            let p = (data[x*4] + data[x*4+1] + data[x*4+2]) / 3;
+            let isBar = isWhite ? (p < 100) : (p > 150);
+            if(isBar && !inB) { inB=true; s=x; }
+            else if(!isBar && inB) { inB=false; if(x-s>2) bars.push({s:s, e:x}); }
+        }
+        if(bars.length >= 17) {
+            let bP = bars.slice(-17); let id = "";
+            let refH = getH(Math.floor((bP[0].s+bP[0].e)/2), isWhite);
+            for(let i=1; i<16; i++) {
+                let h = getH(Math.floor((bP[i].s+bP[i].e)/2), isWhite);
+                id += Math.max(0, Math.min(9, Math.round((h/refH)*10)-1));
+            }
+            checkDB(id, isStatic);
+        } else if(isStatic) {
+            // Lỗi khi upload ảnh tĩnh không có mã vạch
+            document.getElementById('linkContainer').innerHTML = "<span style='color: var(--error-color); font-weight: bold;'>Không tìm thấy mã vạch trong ảnh!</span>";
+        }
+    }
+    function getH(x, isW) {
+        const img = scanCtx.getImageData(x, 0, 1, scanCanvas.height).data;
+        const m = scanCanvas.height/2; let h = 0;
+        for(let y=m; y>=0; y--) { let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3; if(isW ? p<100 : p>150) h++; else break; }
+        for(let y=m+1; y<scanCanvas.height; y++) { let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3; if(isW ? p<100 : p>150) h++; else break; }
+        return h;
+    }
+
+    // --- CƠ CHẾ XỬ LÝ LỖI MỚI (SMART ERROR HANDLING) ---
+    let isChecking = false; // Ngăn chặn việc gọi DB liên tục khi mã vẫn ở trong khung hình
+    async function checkDB(id, isStatic) {
+        if(isChecking) return;
+        isChecking = true;
+        try {
+            const snap = await db.ref('soundCodes/'+id).once('value');
+            if(snap.exists()) {
+                stopCamera();
+                document.getElementById("decodeResult").style.display = "block";
+                document.getElementById('linkContainer').innerHTML = `
+                    <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Nhận diện thành công</p>
+                    <a href="${snap.val().url}" target="_blank" class="result-link">Mở Facebook</a>
+                `;
+            } else {
+                // Xử lý khi mã không có trong hệ thống
+                document.getElementById("decodeResult").style.display = "block";
+                if(isStatic) {
+                    document.getElementById('linkContainer').innerHTML = "<span style='color: var(--error-color); font-weight: bold;'>Mã Soundcode không tồn tại!</span>";
+                } else {
+                    stopCamera(); // Dừng camera ngay lập tức
+                    document.getElementById('linkContainer').innerHTML = `
+                        <span style='color: var(--error-color); font-weight: bold;'>Mã không hợp lệ hoặc không có trong hệ thống!</span><br>
+                        <button class='btn-primary' onclick='startCamera()' style='margin-top: 15px; padding: 10px 20px; font-size: 12px;'>Quét Lại</button>
+                    `;
+                }
+            }
+        } catch (e) {
+            console.error("Lỗi tra cứu:", e);
+        }
+        isChecking = false;
+    }
+
+// 1. Sếp đặt số phiên bản điều khoản hiện tại ở đây
+// Mỗi lần sếp cập nhật nội dung điều khoản mới, sếp chỉ cần tăng số này lên (ví dụ từ 1 lên 2)
+const CURRENT_TERMS_VERSION = "2";
+
+window.addEventListener('load', () => {
+// 2. Lấy phiên bản mà người dùng đã từng đồng ý trong máy họ ra
+const savedVersion = localStorage.getItem('soundcode_terms_version');
+
+// 3. So sánh: Nếu chưa có phiên bản nào HOẶC phiên bản cũ thấp hơn bản hiện tại
+if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
+    // Hiện bảng điều khoản lên bắt ký lại
+    document.getElementById('termsOverlay').style.display = 'flex';
 }
-
-// 2. Firebase Config
-const firebaseConfig = {
-    apiKey: &quot;AIzaSyAV09lR1qTD1BpcUDjXwzB-TCgjDt60jy8&quot;,
-    authDomain: &quot;soundcode-35412.firebaseapp.com&quot;,
-    databaseURL: &quot;[https://soundcode-35412-default-rtdb.asia-southeast1.firebasedatabase.app](https://soundcode-35412-default-rtdb.asia-southeast1.firebasedatabase.app)&quot;,
-    projectId: &quot;soundcode-35412&quot;,
-    storageBucket: &quot;soundcode-35412.firebasestorage.app&quot;,
-    messagingSenderId: &quot;611646314484&quot;,
-    appId: &quot;1:611646314484:web:d9f0251c91c6ad6b680ba1&quot;
-};
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-window.currentSecretId = null; 
-
-// 3. Tạo Soundcode (Mã vạch 15 vạch của sếp)
-async function generateSoundcode() {
-    const url = document.getElementById(&quot;linkInput&quot;).value.trim();
-    const fbRegex = /(facebook\.com|fb\.com|fb\.watch)/;
-    if (!url || !fbRegex.test(url.toLowerCase())) { alert(&quot;Link Facebook không hợp lệ!&quot;); return; }
-    try {
-        const snap = await db.ref(&#39;soundCodes&#39;).orderByChild(&#39;url&#39;).equalTo(url).once(&#39;value&#39;);
-        let id = snap.exists() ? Object.keys(snap.val())[0] : null;
-        if (!id) {
-            id = &quot;&quot;; for (let i = 0; i &lt; 15; i++) id += Math.floor(Math.random() * 10);
-            await db.ref(&#39;soundCodes/&#39; + id).set({ url, createdAt: new Date().toISOString() });
-        }
-        window.currentSecretId = id; drawBarcodeGraphics(id);
-    } catch (e) { alert(&quot;Lỗi kết nối!&quot;); }
-}
-
-function drawBrandLogo(ctx, x, y, radius, color) {
-    ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
-    ctx.fillStyle = &quot;#FF9500&quot;;
-    const barW = 5.2; const gap = 6.8; const bars = [14, 42, 22, 48, 30, 16];
-    const totalW = (barW * bars.length) + (gap * (bars.length - 1));
-    let startX = x - totalW / 2;
-    bars.forEach(h =&gt; {
-        ctx.beginPath(); ctx.roundRect(startX, y - h/2, barW, h, 2); ctx.fill();
-        startX += barW + gap;
-    });
-}
-
-function drawBarcodeGraphics(id) {
-    const canvas = document.getElementById(&quot;encodeCanvas&quot;); const ctx = canvas.getContext(&quot;2d&quot;);
-    const isLight = document.body.classList.contains(&#39;light-mode&#39;);
-    const bgColor = isLight ? &quot;#ffffff&quot; : &quot;#000000&quot;; const fgColor = isLight ? &quot;#000000&quot; : &quot;#ffffff&quot;;
-    ctx.fillStyle = bgColor; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    const cy = canvas.height/2; const logoX = 65; const logoRadius = 40;
-    drawBrandLogo(ctx, logoX, cy, logoRadius, fgColor);
-    ctx.fillStyle = fgColor; let startX = 145;
-    for (let i = -1; i &lt;= 15; i++) {
-        let hR = (i === -1 || i === 15) ? 1.0 : (parseInt(id[i]) + 1) / 10;
-        let h = 55 * hR; ctx.beginPath(); ctx.roundRect(startX, cy - h, 8, h * 2, 4); ctx.fill(); startX += 22;
-    }
-    canvas.style.display = &quot;inline-block&quot;; document.getElementById(&quot;dlBtn&quot;).style.display = &quot;inline-block&quot;;
-}
-
-function downloadCode() {
-    const link = document.createElement(&quot;a&quot;); link.download = &quot;Soundcode.png&quot;;
-    link.href = document.getElementById(&quot;encodeCanvas&quot;).toDataURL(); link.click();
-}
-
-// 4. Hệ thống Quét mã Đa năng (QR, Barcode 128, Soundcode)
-let html5QrCode;
-const scanCanvas = document.getElementById(&#39;hiddenScanCanvas&#39;);
-const scanCtx = scanCanvas.getContext(&#39;2d&#39;, { willReadFrequently: true });
-
-async function startCamera() {
-    document.getElementById(&quot;decodeResult&quot;).style.display = &quot;none&quot;;
-    document.getElementById(&#39;scannerContainer&#39;).style.display = &quot;block&quot;;
-    
-    // Khởi tạo thư viện quét mã quốc tế
-    html5QrCode = new Html5Qrcode(&quot;scannerContainer&quot;);
-    const config = { 
-        fps: 15, 
-        qrbox: { width: 280, height: 180 },
-        formatsToSupport: [ 
-            Html5QrcodeSupportedFormats.QR_CODE, 
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.EAN_13 
-        ]
-    };
-
-    try {
-        await html5QrCode.start({ facingMode: &quot;environment&quot; }, config, 
-            (decodedText) =&gt; { // Khi thấy QR hoặc Barcode 128
-                stopCamera();
-                hienThiKetQua(decodedText, &quot;Mã quốc tế&quot;);
-            },
-            (errorMessage) =&gt; { // Trong khi camera chạy, quét song song Soundcode 15 vạch của sếp
-                attemptDecodeFromVideo();
-            }
-        );
-    } catch (e) { alert(&quot;Lỗi Camera!&quot;); }
-}
-
-function stopCamera() {
-    if(html5QrCode) html5QrCode.stop().then(() =&gt; {
-        document.getElementById(&#39;scannerContainer&#39;).style.display = &quot;none&quot;;
-    });
-}
-
-// Quét mã Soundcode 15 vạch từ luồng video
-function attemptDecodeFromVideo() {
-    const video = document.querySelector(&quot;#scannerContainer video&quot;);
-    if(video &amp;&amp; video.videoWidth &gt; 0) {
-        scanCanvas.width = video.videoWidth; scanCanvas.height = video.videoHeight;
-        scanCtx.drawImage(video, 0, 0);
-        attemptDecode(false);
-    }
-}
-
-function hienThiKetQua(data, type) {
-    document.getElementById(&quot;decodeResult&quot;).style.display = &quot;block&quot;;
-    const isLink = data.startsWith(&#39;http&#39;);
-    document.getElementById(&#39;linkContainer&#39;).innerHTML = `
-        &lt;p style=&quot;font-size:10px; color:var(--text-muted);&quot;&gt;${type}&lt;/p&gt;
-        ${isLink ? `&lt;a href=&quot;${data}&quot; target=&quot;_blank&quot; class=&quot;result-link&quot;&gt;Mở Liên Kết&lt;/a&gt;` : `&lt;b&gt;Kết quả:&lt;/b&gt; ${data}`}
-    `;
-}
-
-// Giữ nguyên logic attemptDecode của sếp để quét Soundcode
-function attemptDecode(isStatic) {
-    const data = scanCtx.getImageData(0, scanCanvas.height/2, scanCanvas.width, 1).data;
-    let edge = 0; for(let i=0; i&lt;10; i++) edge += (data[i*4] + data[i*4+1] + data[i*4+2]) / 3;
-    const isWhite = (edge/10) &gt; 127;
-    let bars = []; let inB = false; let s = 0;
-    for(let x=0; x&lt;scanCanvas.width; x++) {
-        let p = (data[x*4] + data[x*4+1] + data[x*4+2]) / 3;
-        let isBar = isWhite ? (p &lt; 100) : (p &gt; 150);
-        if(isBar &amp;&amp; !inB) { inB=true; s=x; }
-        else if(!isBar &amp;&amp; inB) { inB=false; if(x-s&gt;2) bars.push({s:s, e:x}); }
-    }
-    if(bars.length &gt;= 17) {
-        let bP = bars.slice(-17); let id = &quot;&quot;;
-        let refH = getH(Math.floor((bP[0].s+bP[0].e)/2), isWhite);
-        for(let i=1; i&lt;16; i++) {
-            let h = getH(Math.floor((bP[i].s+bP[i].e)/2), isWhite);
-            id += Math.max(0, Math.min(9, Math.round((h/refH)*10)-1));
-        }
-        checkDB(id, isStatic);
-    }
-}
-
-function getH(x, isW) {
-    const img = scanCtx.getImageData(x, 0, 1, scanCanvas.height).data;
-    const m = scanCanvas.height/2; let h = 0;
-    for(let y=m; y&gt;=0; y--) { let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3; if(isW ? p&lt;100 : p&gt;150) h++; else break; }
-    for(let y=m+1; y&lt;scanCanvas.height; y++) { let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3; if(isW ? p&lt;100 : p&gt;150) h++; else break; }
-    return h;
-}
-
-let isChecking = false;
-async function checkDB(id, isStatic) {
-    if(isChecking) return; isChecking = true;
-    try {
-        const snap = await db.ref(&#39;soundCodes/&#39;+id).once(&#39;value&#39;);
-        if(snap.exists()) {
-            stopCamera();
-            hienThiKetQua(snap.val().url, &quot;Soundcode Hệ Thống&quot;);
-        }
-    } catch (e) { console.error(e); }
-    isChecking = false;
-}
-
-// 5. Quản lý Điều khoản (Version Control)
-const CURRENT_TERMS_VERSION = &quot;2&quot;;
-window.addEventListener(&#39;load&#39;, () =&gt; {
-    const savedVersion = localStorage.getItem(&#39;soundcode_terms_version&#39;);
-    if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
-        document.getElementById(&#39;termsOverlay&#39;).style.display = &#39;flex&#39;;
-    }
 });
 
 function dongYDieuKhoan() {
-    localStorage.setItem(&#39;soundcode_terms_version&#39;, CURRENT_TERMS_VERSION);
-    document.getElementById(&#39;termsOverlay&#39;).style.display = &#39;none&#39;;
+// 4. Khi bấm đồng ý, lưu đúng cái số phiên bản hiện tại vào máy họ
+localStorage.setItem('soundcode_terms_version', CURRENT_TERMS_VERSION);
+document.getElementById('termsOverlay').style.display = 'none';
 }
 
 function tuChoi() {
-    alert(&quot;Sếp cần đồng ý để tiếp tục.&quot;);
-    window.location.href = &quot;about:blank&quot;;
+alert("Sếp cần đồng ý với điều khoản mới nhất để tiếp tục sử dụng.");
+window.location.href = "about:blank";
 }
 </script>
 </body>
 </html>
+
 
 
 
