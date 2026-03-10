@@ -1,5 +1,5 @@
 {
-  "name": "Soundcode Scanner",
+  "name": "Soundcode",
   "short_name": "Soundcode",
   "start_url": "/",
   "display": "standalone",
@@ -7,7 +7,7 @@
   "theme_color": "#FF9500",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/8155/8155310.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
