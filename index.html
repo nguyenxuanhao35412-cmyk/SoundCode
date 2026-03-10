@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Soundcode - Interactive Scanner</title>
+    <title>Soundcode - V3 Pro Scanner</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -38,36 +38,16 @@
         .container { max-width: 600px; margin: 20px auto; background: var(--bg-container); padding: 25px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); position: relative; }
 
         .app-header { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center;    
-            justify-content: center; 
-            padding: 10px 0 25px 0; 
-            margin-bottom: 25px;
-            border-bottom: 1px solid var(--border-color);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            padding: 10px 0 25px 0; margin-bottom: 25px; border-bottom: 1px solid var(--border-color);
         }
-        h1 { 
-            margin: 0 0 15px 0; 
-            color: var(--text-title); 
-            letter-spacing: 4px; 
-            text-transform: uppercase; 
-            font-size: 26px; 
-            font-weight: 800; 
-            text-align: center;
-        }
+        h1 { margin: 0 0 15px 0; color: var(--text-title); letter-spacing: 4px; text-transform: uppercase; font-size: 26px; font-weight: 800; text-align: center; }
+        
         .theme-btn {
-            position: relative; 
-            background: var(--bg-section); 
-            color: var(--text-title);
-            border: 1px solid var(--border-color); 
-            padding: 8px 18px; 
-            border-radius: 20px;
-            font-size: 11px; 
-            cursor: pointer; 
-            font-weight: 700; 
-            text-transform: uppercase; 
-            transition: 0.3s;
-            white-space: nowrap; 
+            position: relative; background: var(--bg-section); color: var(--text-title);
+            border: 1px solid var(--border-color); padding: 8px 18px; border-radius: 20px;
+            font-size: 11px; cursor: pointer; font-weight: 700; text-transform: uppercase; 
+            transition: 0.3s; white-space: nowrap; 
         }
         .theme-btn:hover { border-color: var(--btn-bg); color: var(--btn-bg); }
 
@@ -83,16 +63,23 @@
         .btn-primary { 
             background: var(--btn-bg); color: var(--btn-text); border: none; padding: 14px 28px; 
             font-size: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; 
-            border-radius: 10px; margin: 5px; transition: 0.2s; box-shadow: 0 5px 15px var(--highlight-glow);
-            font-family: inherit;
+            border-radius: 10px; margin: 5px; transition: 0.2s; box-shadow: 0 5px 15px var(--highlight-glow); font-family: inherit;
         }
 
         #encodeCanvas { background: var(--bg-main); margin-top: 20px; border-radius: 12px; max-width: 100%; display: none; }
-        .drop-zone { width: 85%; margin: 10px auto; padding: 40px 10px; border: 2px dashed var(--btn-bg); border-radius: 15px; background: rgba(255, 149, 0, 0.05); color: var(--text-title); font-weight: 700; cursor: pointer; font-size: 12px; text-transform: uppercase; }
+        
+        /* Dropzone CSS */
+        .drop-zone { 
+            width: 85%; margin: 10px auto; padding: 40px 10px; border: 2px dashed var(--btn-bg); 
+            border-radius: 15px; background: rgba(255, 149, 0, 0.05); color: var(--text-title); 
+            font-weight: 700; cursor: pointer; font-size: 12px; text-transform: uppercase;
+            transition: all 0.2s ease;
+        }
 
+        /* Camera CSS */
         .scanner-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; z-index: 9999; background: #000; }
         .scanner-container video { width: 100%; height: 100%; object-fit: cover; }
-        .close-btn { position: absolute; top: 40px; right: 20px; background: rgba(0,0,0,0.8); color: #fff; border: 1px solid #fff; padding: 8px 20px; border-radius: 8px; font-weight: 800; font-size: 11px; z-index: 10000; text-transform: uppercase; }
+        .close-btn { position: absolute; top: 40px; right: 20px; background: rgba(0,0,0,0.8); color: #fff; border: 1px solid #fff; padding: 8px 20px; border-radius: 8px; font-weight: 800; font-size: 11px; z-index: 10000; text-transform: uppercase; cursor: pointer; }
         
         .scan-frame { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 400px; height: 150px; border: 2px solid var(--btn-bg); border-radius: 16px; z-index: 9999; box-shadow: 0 0 0 10000px rgba(0,0,0,0.75); }
         .laser { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--laser-color); box-shadow: 0 0 15px 3px var(--laser-color); animation: scanline 2.5s infinite ease-in-out; }
@@ -106,28 +93,28 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
-<div id="termsOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:999999; display:none; align-items:center; justify-content:center; backdrop-filter:blur(10px);">
-<div style="background:#1f1f29; width:85%; max-width:400px; padding:30px; border-radius:24px; border:1px solid #FF9500; text-align:center;">
-<h2 style="color:#fff; margin-top:0;">📜 ĐIỀU KHOẢN</h2>
-<div style="color:#888; font-size:14px; text-align:left; margin:20px 0; max-height:200px; overflow-y:auto; padding-right:10px;">
-Chào mừng sếp đến với SoundCode!
 
-- Chúng tôi cung cấp dịch vụ chuyển hoá đường dẫn, liên kết Facebook thành các đoạn mã vạch được mã hoá có hình dạng giọng nói thu âm.
-- Chúng tôi không lưu hình ảnh của bạn.
-- Xin lưu ý: App cần dùng <b>Camera</b> để quét mã.
-- Và mã vạch chỉ có thể quét bằng phần mềm của chúng tôi.
-- Thông tin duy nhất được lưu vào hệ thống là link FB.    
-- Nếu lo ngại về vấn đề lộ link fb thì vui lòng không dùng.
-- Xin hãy cam kết không tạo mã cho link lừa đảo.
-- Bấm "Đồng ý" để bắt đầu trải nghiệm nhé!
+<div id="termsOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:999999; display:none; align-items:center; justify-content:center; backdrop-filter:blur(10px);">
+    <div style="background:#1f1f29; width:85%; max-width:400px; padding:30px; border-radius:24px; border:1px solid #FF9500; text-align:center;">
+        <h2 style="color:#fff; margin-top:0;">📜 ĐIỀU KHOẢN</h2>
+        <div style="color:#888; font-size:14px; text-align:left; margin:20px 0; max-height:200px; overflow-y:auto; padding-right:10px;">
+            Chào mừng sếp đến với SoundCode!<br><br>
+            - Chúng tôi cung cấp dịch vụ chuyển hoá đường dẫn, liên kết Facebook thành các đoạn mã vạch được mã hoá có hình dạng giọng nói thu âm.<br>
+            - Chúng tôi không lưu hình ảnh của bạn.<br>
+            - Xin lưu ý: App cần dùng <b>Camera</b> để quét mã.<br>
+            - Và mã vạch chỉ có thể quét bằng phần mềm của chúng tôi.<br>
+            - Thông tin duy nhất được lưu vào hệ thống là link FB. <br>   
+            - Nếu lo ngại về vấn đề lộ link fb thì vui lòng không dùng.<br>
+            - Xin hãy cam kết không tạo mã cho link lừa đảo.<br>
+            - Bấm "Đồng ý" để bắt đầu trải nghiệm nhé!
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button onclick="tuChoi()" style="background:#333; color:#fff; border:1px solid #444; padding:12px; flex:1; border-radius:12px; font-weight:600; cursor:pointer;">TỪ CHỐI</button>
+            <button onclick="dongYDieuKhoan()" style="background:#FF9500; color:#000; border:none; padding:12px; flex:2; border-radius:12px; font-weight:800; cursor:pointer;font-family: 'Inter', sans-serif;font-size: 16px; text-transform: uppercase;">ĐỒNG Ý</button>
+        </div>
+    </div>
 </div>
-<div style="display: flex; gap: 10px; margin-top: 20px;">
-<button onclick="tuChoi()" style="background:#333; color:#fff; border:1px solid #444; padding:12px; flex:1; border-radius:12px; font-weight:600; cursor:pointer;">TỪ CHỐI</button>
-<button onclick="dongYDieuKhoan()" style="background:#FF9500; color:#000; border:none; padding:12px; flex:2; border-radius:12px; font-weight:800; cursor:pointer;font-family: 'Inter', sans-serif;font-size: 16px;
-    text-transform: uppercase;/* Cho chữ in hoa nhìn cho ngầu */">ĐỒNG Ý</button>
-</div>
-</div>
-</div>
+
 <div class="container">
     <div class="app-header">
         <h1>SOUNDCODE</h1>
@@ -145,6 +132,7 @@ Chào mừng sếp đến với SoundCode!
 
     <div class="section">
         <h2>2. Máy quét Soundcode</h2>
+        
         <div id="dropZone" class="drop-zone">Kéo thả hoặc Bấm để chọn ảnh</div>
         <input type="file" id="fileInput" accept="image/*" style="display: none;">
         
@@ -155,6 +143,7 @@ Chào mừng sếp đến với SoundCode!
         </div>
 
         <div style="margin: 20px 0; color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 2px;">HOẶC</div>
+        
         <button class="btn-primary" onclick="startCamera()">Quét trực tiếp</button>
         
         <div class="scanner-container" id="scannerContainer">
@@ -164,11 +153,15 @@ Chào mừng sếp đến với SoundCode!
         </div>
         
         <canvas id="hiddenScanCanvas" style="display: none;"></canvas>
+        
         <div class="result-box" id="decodeResult"><div id="linkContainer"></div></div>
     </div>
 </div>
 
 <script>
+    // ==========================================
+    // 1. GIAO DIỆN & CẤU HÌNH
+    // ==========================================
     function toggleTheme() {
         const body = document.body; const btn = document.getElementById('themeBtn');
         body.classList.toggle('light-mode');
@@ -190,41 +183,38 @@ Chào mừng sếp đến với SoundCode!
 
     window.currentSecretId = null; 
 
+    // ==========================================
+    // 2. TẠO MÃ & VẼ ĐỒ HỌA
+    // ==========================================
     async function generateSoundcode() {
         const url = document.getElementById("linkInput").value.trim();
         const fbRegex = /(facebook\.com|fb\.com|fb\.watch)/;
         if (!url || !fbRegex.test(url.toLowerCase())) { alert("Link Facebook không hợp lệ!"); return; }
+        
         try {
             const snap = await db.ref('soundCodes').orderByChild('url').equalTo(url).once('value');
             let id = snap.exists() ? Object.keys(snap.val())[0] : null;
             if (!id) {
-                id = ""; for (let i = 0; i < 15; i++) id += Math.floor(Math.random() * 10);
+                id = ""; 
+                for (let i = 0; i < 14; i++) id += Math.floor(Math.random() * 10); // Tạo 14 chữ số
                 await db.ref('soundCodes/' + id).set({ url, createdAt: new Date().toISOString() });
             }
             window.currentSecretId = id; drawBarcodeGraphics(id);
-        } catch (e) { alert("Lỗi kết nối!"); }
+        } catch (e) { alert("Lỗi kết nối Firebase!"); }
     }
 
-    // Logo 6 vạch có Safe Zone
     function drawBrandLogo(ctx, x, y, radius, color) {
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.fill();
-
+        ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
         ctx.fillStyle = "#FF9500";
-        const barW = 5.2; 
-        const gap = 6.8; 
-        const bars = [14, 42, 22, 48, 30, 16]; 
-        
+        const barW = 5.2; const gap = 6.8; const bars = [14, 42, 22, 48, 30, 16]; 
         const totalW = (barW * bars.length) + (gap * (bars.length - 1));
         let startX = x - totalW / 2;
         
         bars.forEach(h => {
             ctx.beginPath();
-            ctx.roundRect(startX, y - h/2, barW, h, 2);
-            ctx.fill();
-            startX += barW + gap;
+            if(ctx.roundRect) { ctx.roundRect(startX, y - h/2, barW, h, 2); } 
+            else { ctx.rect(startX, y - h/2, barW, h); }
+            ctx.fill(); startX += barW + gap;
         });
     }
 
@@ -239,9 +229,19 @@ Chào mừng sếp đến với SoundCode!
         drawBrandLogo(ctx, logoX, cy, logoRadius, fgColor);
 
         ctx.fillStyle = fgColor; let startX = 145;
-        for (let i = -1; i <= 15; i++) {
-            let hR = (i === -1 || i === 15) ? 1.0 : (parseInt(id[i]) + 1) / 10;
-            let h = 55 * hR; ctx.beginPath(); ctx.roundRect(startX, cy - h, 8, h * 2, 4); ctx.fill(); startX += 22;
+        for (let i = 0; i < 17; i++) {
+            let hR;
+            if (i === 0 || i === 16) { hR = 0.3; } // 2 đầu thấp 30%
+            else if (i === 8) { hR = 1.0; }        // Giữa cao 100% (Mốc)
+            else {
+                let dataIdx = (i < 8) ? i - 1 : i - 2;
+                hR = (parseInt(id[dataIdx]) + 1) / 11;
+            }
+            let h = 55 * hR; 
+            ctx.beginPath(); 
+            if(ctx.roundRect) ctx.roundRect(startX, cy - h, 8, h * 2, 4); 
+            else ctx.rect(startX, cy - h, 8, h * 2);
+            ctx.fill(); startX += 22;
         }
         canvas.style.display = "inline-block"; document.getElementById("dlBtn").style.display = "inline-block";
     }
@@ -251,10 +251,44 @@ Chào mừng sếp đến với SoundCode!
         link.href = document.getElementById("encodeCanvas").toDataURL(); link.click();
     }
 
-    const dropZone = document.getElementById('dropZone'); const fileInput = document.getElementById('fileInput');
-    const scanCanvas = document.getElementById('hiddenScanCanvas'); const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
+    // ==========================================
+    // 3. XỬ LÝ UPLOAD ẢNH & KÉO THẢ (DRAG & DROP)
+    // ==========================================
+    const dropZone = document.getElementById('dropZone'); 
+    const fileInput = document.getElementById('fileInput');
+    const scanCanvas = document.getElementById('hiddenScanCanvas'); 
+    const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
+    
     dropZone.onclick = () => fileInput.click();
     fileInput.onchange = (e) => { if (e.target.files[0]) handleImageFile(e.target.files[0]); };
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.background = 'rgba(255, 149, 0, 0.2)';
+        dropZone.style.transform = 'scale(1.02)';
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dropZone.style.background = 'rgba(255, 149, 0, 0.05)';
+        dropZone.style.transform = 'scale(1)';
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.background = 'rgba(255, 149, 0, 0.05)';
+        dropZone.style.transform = 'scale(1)';
+        
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            let file = e.dataTransfer.files[0];
+            if (file.type.startsWith('image/')) {
+                handleImageFile(file);
+            } else {
+                alert("Vui lòng chỉ chọn file hình ảnh!");
+            }
+        }
+    });
+
     function handleImageFile(file) {
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -269,26 +303,33 @@ Chào mừng sếp đến với SoundCode!
         };
         reader.readAsDataURL(file);
     }
+
     function executeStaticScan() {
         document.getElementById('decodeResult').style.display = "block";
         document.getElementById('linkContainer').innerHTML = "Đang phân tích...";
         setTimeout(() => attemptDecode(true), 1000);
     }
     
+    // ==========================================
+    // 4. CAMERA THỜI GIAN THỰC
+    // ==========================================
     const video = document.getElementById('videoFeed'); let isScanning = false;
+    
     async function startCamera() {
         try {
-            document.getElementById("decodeResult").style.display = "none"; // Ẩn lỗi cũ khi quét lại
+            document.getElementById("decodeResult").style.display = "none";
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 } } });
             video.srcObject = stream;
             document.getElementById('scannerContainer').style.display = "block";
             isScanning = true; requestAnimationFrame(scanLoop);
-        } catch (e) { alert("Lỗi Camera!"); }
+        } catch (e) { alert("Lỗi Camera! Vui lòng cấp quyền hoặc kiểm tra kết nối HTTPS."); }
     }
+    
     function stopCamera() {
         isScanning = false; if(video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
         document.getElementById('scannerContainer').style.display = "none";
     }
+    
     function scanLoop() {
         if(!isScanning) return;
         if(video.videoWidth > 0) {
@@ -298,40 +339,85 @@ Chào mừng sếp đến với SoundCode!
         setTimeout(() => requestAnimationFrame(scanLoop), 200);
     }
     
+    // ==========================================
+    // 5. THUẬT TOÁN QUÉT (RADAR ĐA TẦNG)
+    // ==========================================
     function attemptDecode(isStatic) {
-        const data = scanCtx.getImageData(0, scanCanvas.height/2, scanCanvas.width, 1).data;
-        let edge = 0; for(let i=0; i<10; i++) edge += (data[i*4] + data[i*4+1] + data[i*4+2]) / 3;
-        const isWhite = (edge/10) > 127;
-        let bars = []; let inB = false; let s = 0;
-        for(let x=0; x<scanCanvas.width; x++) {
-            let p = (data[x*4] + data[x*4+1] + data[x*4+2]) / 3;
-            let isBar = isWhite ? (p < 100) : (p > 150);
-            if(isBar && !inB) { inB=true; s=x; }
-            else if(!isBar && inB) { inB=false; if(x-s>2) bars.push({s:s, e:x}); }
-        }
-        if(bars.length >= 17) {
-            let bP = bars.slice(-17); let id = "";
-            let refH = getH(Math.floor((bP[0].s+bP[0].e)/2), isWhite);
-            for(let i=1; i<16; i++) {
-                let h = getH(Math.floor((bP[i].s+bP[i].e)/2), isWhite);
-                id += Math.max(0, Math.min(9, Math.round((h/refH)*10)-1));
+        try {
+            let foundId = null;
+            // Quét 7 đường ngang khác nhau để tránh điểm mù
+            const scanLines = [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8]; 
+            
+            for (let ratio of scanLines) {
+                let y = Math.floor(scanCanvas.height * ratio);
+                const data = scanCtx.getImageData(0, y, scanCanvas.width, 1).data;
+                
+                let edge = 0; for(let i=0; i<10; i++) edge += (data[i*4] + data[i*4+1] + data[i*4+2]) / 3;
+                const isWhite = (edge/10) > 127;
+                
+                let bars = []; let inB = false; let s = 0;
+                for(let x=0; x<scanCanvas.width; x++) {
+                    let p = (data[x*4] + data[x*4+1] + data[x*4+2]) / 3;
+                    let isBar = isWhite ? (p < 100) : (p > 150);
+                    if(isBar && !inB) { inB=true; s=x; }
+                    else if(!isBar && inB) { inB=false; if(x-s>2) bars.push({s:s, e:x}); }
+                }
+                
+                if(bars.length >= 17) {
+                    let bP = bars.slice(-17); 
+                    let id = "";
+                    let midX = Math.floor((bP[8].s + bP[8].e) / 2); // Vạch mốc số 9
+                    let refH = getH(midX, y, isWhite); 
+                    
+                    if(refH > 5) {
+                        let valid = true;
+                        for(let i=0; i<17; i++) {
+                            if (i === 0 || i === 8 || i === 16) continue;
+                            let curX = Math.floor((bP[i].s + bP[i].e) / 2);
+                            let h = getH(curX, y, isWhite);
+                            
+                            if (h <= 0) { valid = false; break; }
+
+                            let val = Math.round((h / refH) * 11) - 1;
+                            id += Math.max(0, Math.min(9, val));
+                        }
+                        if(valid && id.length === 14) {
+                            foundId = id; 
+                            break; // Tìm thấy mã hợp lệ thì dừng quét các đường khác
+                        }
+                    }
+                }
             }
-            checkDB(id, isStatic);
-        } else if(isStatic) {
-            // Lỗi khi upload ảnh tĩnh không có mã vạch
-            document.getElementById('linkContainer').innerHTML = "<span style='color: var(--error-color); font-weight: bold;'>Không tìm thấy mã vạch trong ảnh!</span>";
+
+            if (foundId) {
+                checkDB(foundId, isStatic);
+            } else if(isStatic) {
+                document.getElementById('linkContainer').innerHTML = "<span style='color: var(--error-color); font-weight: bold;'>Không tìm thấy mã Soundcode hợp lệ trong ảnh!</span>";
+            }
+        } catch (err) {
+            console.error("Lỗi quét:", err);
         }
     }
-    function getH(x, isW) {
+
+    function getH(x, startY, isW) {
+        x = Math.floor(x); startY = Math.floor(startY);
         const img = scanCtx.getImageData(x, 0, 1, scanCanvas.height).data;
-        const m = scanCanvas.height/2; let h = 0;
-        for(let y=m; y>=0; y--) { let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3; if(isW ? p<100 : p>150) h++; else break; }
-        for(let y=m+1; y<scanCanvas.height; y++) { let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3; if(isW ? p<100 : p>150) h++; else break; }
+        let h = 0;
+        for(let y=startY; y>=0; y--) { 
+            let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3; 
+            if(isW ? p<100 : p>150) h++; else break; 
+        }
+        for(let y=startY+1; y<scanCanvas.height; y++) { 
+            let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3; 
+            if(isW ? p<100 : p>150) h++; else break; 
+        }
         return h;
     }
 
-    // --- CƠ CHẾ XỬ LÝ LỖI MỚI (SMART ERROR HANDLING) ---
-    let isChecking = false; // Ngăn chặn việc gọi DB liên tục khi mã vẫn ở trong khung hình
+    // ==========================================
+    // 6. KIỂM TRA DB & ĐIỀU KHOẢN
+    // ==========================================
+    let isChecking = false; 
     async function checkDB(id, isStatic) {
         if(isChecking) return;
         isChecking = true;
@@ -345,63 +431,38 @@ Chào mừng sếp đến với SoundCode!
                     <a href="${snap.val().url}" target="_blank" class="result-link">Mở Facebook</a>
                 `;
             } else {
-                // Xử lý khi mã không có trong hệ thống
                 document.getElementById("decodeResult").style.display = "block";
                 if(isStatic) {
                     document.getElementById('linkContainer').innerHTML = "<span style='color: var(--error-color); font-weight: bold;'>Mã Soundcode không tồn tại!</span>";
                 } else {
-                    stopCamera(); // Dừng camera ngay lập tức
+                    stopCamera(); 
                     document.getElementById('linkContainer').innerHTML = `
-                        <span style='color: var(--error-color); font-weight: bold;'>Mã không hợp lệ hoặc không có trong hệ thống!</span><br>
+                        <span style='color: var(--error-color); font-weight: bold;'>Mã không có trong hệ thống!</span><br>
                         <button class='btn-primary' onclick='startCamera()' style='margin-top: 15px; padding: 10px 20px; font-size: 12px;'>Quét Lại</button>
                     `;
                 }
             }
-        } catch (e) {
-            console.error("Lỗi tra cứu:", e);
-        }
+        } catch (e) { console.error("Lỗi tra cứu:", e); }
         isChecking = false;
     }
 
-// 1. Sếp đặt số phiên bản điều khoản hiện tại ở đây
-// Mỗi lần sếp cập nhật nội dung điều khoản mới, sếp chỉ cần tăng số này lên (ví dụ từ 1 lên 2)
-const CURRENT_TERMS_VERSION = "3";
+    const CURRENT_TERMS_VERSION = "3";
+    window.addEventListener('load', () => {
+        const savedVersion = localStorage.getItem('soundcode_terms_version');
+        if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
+            document.getElementById('termsOverlay').style.display = 'flex';
+        }
+    });
 
-window.addEventListener('load', () => {
-// 2. Lấy phiên bản mà người dùng đã từng đồng ý trong máy họ ra
-const savedVersion = localStorage.getItem('soundcode_terms_version');
+    function dongYDieuKhoan() {
+        localStorage.setItem('soundcode_terms_version', CURRENT_TERMS_VERSION);
+        document.getElementById('termsOverlay').style.display = 'none';
+    }
 
-// 3. So sánh: Nếu chưa có phiên bản nào HOẶC phiên bản cũ thấp hơn bản hiện tại
-if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
-    // Hiện bảng điều khoản lên bắt ký lại
-    document.getElementById('termsOverlay').style.display = 'flex';
-}
-});
-
-function dongYDieuKhoan() {
-// 4. Khi bấm đồng ý, lưu đúng cái số phiên bản hiện tại vào máy họ
-localStorage.setItem('soundcode_terms_version', CURRENT_TERMS_VERSION);
-document.getElementById('termsOverlay').style.display = 'none';
-}
-
-function tuChoi() {
-alert("Bạn cần đồng ý với điều khoản mới nhất để tiếp tục sử dụng.");
-window.location.href = "about:blank";
-}
+    function tuChoi() {
+        alert("Bạn cần đồng ý với điều khoản mới nhất để tiếp tục sử dụng.");
+        window.location.href = "about:blank";
+    }
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
