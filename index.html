@@ -363,8 +363,19 @@ Bấm "Đồng ý" để bắt đầu trải nghiệm nhé!
         }
         isChecking = false;
     }
+    window.addEventListener('load', () => {
+if (!localStorage.getItem('soundcode_confirmed')) {
+document.getElementById('termsOverlay').style.display = 'flex';
+}
+});
+
+function dongYDieuKhoan() {
+localStorage.setItem('soundcode_confirmed', 'true');
+document.getElementById('termsOverlay').style.display = 'none';
+}
 </script>
 </body>
 </html>
+
 
 
