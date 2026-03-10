@@ -178,16 +178,19 @@ Chào mừng sếp đến với SoundCode!
         <div class="scanner-container" id="scannerContainer">
             <button class="close-btn" onclick="stopCamera()">Đóng</button>
             <video id="videoFeed" autoplay playsinline></video>
-            <div class="scan-frame"><div class="laser"></div></div>
-        </div>
-        
-        <canvas id="hiddenScanCanvas" style="display: none;"></canvas>
-        <div class="result-box" id="decodeResult"><div id="linkContainer"></div></div>
-    </div>
+            <div id="dropZone" style="border: 2px dashed #FF9500; padding: 30px; border-radius: 12px; cursor: pointer; margin-bottom: 20px; text-align: center;">
+    <p style="margin: 0; color: #FF9500; font-weight: bold;">Kéo thả ảnh vào đây hoặc Bấm để chọn</p>
+    <input type="file" id="fileInput" accept="image/*" style="display: none;">
 </div>
 
+<button class="btn" onclick="startCamera()" style="background: #FF9500; color: #000; padding: 12px 24px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; width: 100%; margin-bottom: 20px;">📷 MỞ CAMERA QUÉT MÃ</button>
+
+<div id="scannerContainer" style="display: none; width: 100%; max-width: 500px; margin: auto; border-radius: 12px; overflow: hidden;"></div>
+
+<canvas id="hiddenScanCanvas" style="display: none;"></canvas>
+
 <script>
-    // 1. Cấu hình Firebase
+    // --- 1. KẾT NỐI FIREBASE ---
     const firebaseConfig = {
         apiKey: "AIzaSyAV09lR1qTD1BpcUDjXwzB-TCgjDt60jy8",
         authDomain: "soundcode-35412.firebaseapp.com",
@@ -200,103 +203,99 @@ Chào mừng sếp đến với SoundCode!
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 2. Các biến toàn cục
+    // --- 2. BIẾN TOÀN CỤC ---
     let html5QrCode;
     let isScanning = false;
     const scanCanvas = document.getElementById('hiddenScanCanvas');
     const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
 
-    // 3. Giao diện & Font
-    function toggleTheme() {
-        document.body.classList.toggle('light-mode');
-        const btn = document.getElementById('themeBtn');
-        btn.innerText = document.body.classList.contains('light-mode') ? "GIAO DIỆN TỐI" : "GIAO DIỆN SÁNG";
-        if(window.currentSecretId) drawBarcodeGraphics(window.currentSecretId);
-    }
+    // --- 3. XỬ LÝ CHỌN FILE VÀ KÉO THẢ ẢNH ---
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
 
-    // 4. Tạo Soundcode (Mã vạch của sếp)
-    async function generateSoundcode() {
-        const url = document.getElementById("linkInput").value.trim();
-        const fbRegex = /(facebook\.com|fb\.com|fb\.watch)/;
-        if (!url || !fbRegex.test(url.toLowerCase())) { alert("Link Facebook không hợp lệ!"); return; }
-        try {
-            const snap = await db.ref('soundCodes').orderByChild('url').equalTo(url).once('value');
-            let id = snap.exists() ? Object.keys(snap.val())[0] : null;
-            if (!id) {
-                id = ""; for (let i = 0; i < 15; i++) id += Math.floor(Math.random() * 10);
-                await db.ref('soundCodes/' + id).set({ url, createdAt: new Date().toISOString() });
-            }
-            window.currentSecretId = id; drawBarcodeGraphics(id);
-        } catch (e) { alert("Lỗi kết nối!"); }
-    }
+    // Mở cửa sổ chọn file khi bấm vào vùng DropZone
+    dropZone.onclick = () => fileInput.click();
+    
+    // Khi người dùng đã chọn xong file
+    fileInput.onchange = (e) => { 
+        if (e.target.files[0]) handleImageFile(e.target.files[0]); 
+    };
 
-    function drawBarcodeGraphics(id) {
-        const canvas = document.getElementById("encodeCanvas"); const ctx = canvas.getContext("2d");
-        const isLight = document.body.classList.contains('light-mode');
-        const bgColor = isLight ? "#ffffff" : "#000000"; const fgColor = isLight ? "#000000" : "#ffffff";
-        ctx.fillStyle = bgColor; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        const cy = canvas.height/2;
-        
-        // Vẽ Logo trung tâm
-        ctx.beginPath(); ctx.arc(65, cy, 40, 0, Math.PI * 2); ctx.fillStyle = fgColor; ctx.fill();
-        ctx.fillStyle = "#FF9500";
-        const bars = [14, 42, 22, 48, 30, 16]; let startXLogo = 65 - 30;
-        bars.forEach(h => {
-            ctx.beginPath(); ctx.roundRect(startXLogo, cy - h/2, 5.2, h, 2); ctx.fill();
-            startXLogo += 5.2 + 6.8;
-        });
-
-        // Vẽ vạch Soundcode
-        ctx.fillStyle = fgColor; let startX = 145;
-        for (let i = -1; i <= 15; i++) {
-            let hR = (i === -1 || i === 15) ? 1.0 : (parseInt(id[i]) + 1) / 10;
-            let h = 55 * hR; ctx.beginPath(); ctx.roundRect(startX, cy - h, 8, h * 2, 4); ctx.fill(); startX += 22;
-        }
-        canvas.style.display = "inline-block"; document.getElementById("dlBtn").style.display = "inline-block";
-    }
-
-    // 5. MÁY QUÉT ĐA NĂNG (QR + BARCODE 128 + SOUNDCODE)
-    async function startCamera() {
-        document.getElementById("decodeResult").style.display = "none";
-        document.getElementById('scannerContainer').style.display = "block";
-        
-        // Khởi tạo thư viện
-        html5QrCode = new Html5Qrcode("scannerContainer");
-        const config = { 
-            fps: 20, 
-            qrbox: { width: 280, height: 160 },
-            formatsToSupport: [ 
-                Html5QrcodeSupportedFormats.QR_CODE, 
-                Html5QrcodeSupportedFormats.CODE_128 
-            ]
+    function handleImageFile(file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                // Đổ ảnh vào Canvas ẩn để phân tích
+                scanCanvas.width = img.width; 
+                scanCanvas.height = img.height;
+                scanCtx.drawImage(img, 0, 0);
+                
+                // Bắt đầu giải mã ảnh tĩnh
+                document.getElementById('decodeResult').style.display = "block";
+                document.getElementById('linkContainer').innerHTML = "⏳ Đang phân tích ảnh...";
+                setTimeout(() => attemptDecode(true), 500);
+            };
+            img.src = event.target.result;
         };
+        reader.readAsDataURL(file);
+    }
 
+    // --- 4. XỬ LÝ CAMERA ĐA NĂNG (QR + BARCODE 128 + SOUNDCODE) ---
+    async function startCamera() {
         try {
+            document.getElementById("decodeResult").style.display = "none";
+            const container = document.getElementById('scannerContainer');
+            container.style.display = "block";
+
+            // Khởi tạo máy quét quốc tế
+            html5QrCode = new Html5Qrcode("scannerContainer");
+            const config = { 
+                fps: 15, 
+                qrbox: { width: 280, height: 180 },
+                formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE, Html5QrcodeSupportedFormats.CODE_128 ]
+            };
+
             await html5QrCode.start({ facingMode: "environment" }, config, 
-                (decodedText) => { // Khi quét trúng QR/Barcode
-                    stopCamera();
+                (decodedText) => {
+                    stopCamera(); // Thấy mã QR/128 là dừng cam ngay
                     hienThiKetQua(decodedText, "Mã Quốc Tế");
                 }
             );
-            
-            // Chạy luồng quét Soundcode song song
+
+            // Bật luồng phân tích Soundcode song song
             isScanning = true;
-            requestAnimationFrame(loopSoundcode);
-        } catch (e) { alert("Lỗi Camera! Sếp nhớ để link thư viện trong head nhé."); }
-    }
+            requestAnimationFrame(scanLoop);
 
-    function loopSoundcode() {
-        if (!isScanning) return;
-        const video = document.querySelector("#scannerContainer video");
-        if (video && video.videoWidth > 0) {
-            scanCanvas.width = video.videoWidth; scanCanvas.height = video.videoHeight;
-            scanCtx.drawImage(video, 0, 0);
-            attemptDecode(); 
+        } catch (e) {
+            alert("Lỗi mở Camera! Kiểm tra xem đã cấp quyền chưa sếp nhé.");
+            console.error(e);
         }
-        requestAnimationFrame(loopSoundcode);
     }
 
-    function attemptDecode() {
+    function scanLoop() {
+        if(!isScanning) return;
+        const video = document.querySelector("#scannerContainer video");
+        if(video && video.videoWidth > 0) {
+            scanCanvas.width = video.videoWidth; 
+            scanCanvas.height = video.videoHeight;
+            scanCtx.drawImage(video, 0, 0);
+            attemptDecode(false);
+        }
+        requestAnimationFrame(scanLoop);
+    }
+
+    function stopCamera() {
+        isScanning = false;
+        if(html5QrCode) {
+            html5QrCode.stop().then(() => {
+                document.getElementById('scannerContainer').style.display = "none";
+            }).catch(e => console.log(e));
+        }
+    }
+
+    // --- 5. LOGIC GIẢI MÃ SOUNDCODE (Giữ nguyên của sếp) ---
+    function attemptDecode(isStatic) {
         const data = scanCtx.getImageData(0, scanCanvas.height/2, scanCanvas.width, 1).data;
         let edge = 0; for(let i=0; i<10; i++) edge += (data[i*4] + data[i*4+1] + data[i*4+2]) / 3;
         const isWhite = (edge/10) > 127;
@@ -309,66 +308,53 @@ Chào mừng sếp đến với SoundCode!
         }
         if(bars.length >= 17) {
             let bP = bars.slice(-17); let id = "";
-            let refH = getH_Sound(Math.floor((bP[0].s+bP[0].e)/2), isWhite);
+            let refH = getH(Math.floor((bP[0].s+bP[0].e)/2), isWhite);
             for(let i=1; i<16; i++) {
-                let h = getH_Sound(Math.floor((bP[i].s+bP[i].e)/2), isWhite);
+                let h = getH(Math.floor((bP[i].s+bP[i].e)/2), isWhite);
                 id += Math.max(0, Math.min(9, Math.round((h/refH)*10)-1));
             }
-            checkDB(id);
+            checkDB(id, isStatic);
+        } else if(isStatic) {
+            document.getElementById('linkContainer').innerHTML = "<span style='color: #ff4444;'>❌ Không tìm thấy mã vạch trong ảnh!</span>";
         }
     }
 
-    function getH_Sound(x, isW) {
-        const imgData = scanCtx.getImageData(x, 0, 1, scanCanvas.height).data;
+    function getH(x, isW) {
+        const img = scanCtx.getImageData(x, 0, 1, scanCanvas.height).data;
         const m = scanCanvas.height/2; let h = 0;
-        for(let y=m; y>=0; y--) { let p = (imgData[y*4]+imgData[y*4+1]+imgData[y*4+2])/3; if(isW ? p<100 : p>150) h++; else break; }
-        for(let y=m+1; y<scanCanvas.height; y++) { let p = (imgData[y*4]+imgData[y*4+1]+imgData[y*4+2])/3; if(isW ? p<100 : p>150) h++; else break; }
+        for(let y=m; y>=0; y--) { let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3; if(isW ? p<100 : p>150) h++; else break; }
+        for(let y=m+1; y<scanCanvas.height; y++) { let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3; if(isW ? p<100 : p>150) h++; else break; }
         return h;
     }
 
-    async function checkDB(id) {
-        if(window.isCheckingDB) return; window.isCheckingDB = true;
-        const snap = await db.ref('soundCodes/'+id).once('value');
-        if(snap.exists()) {
-            stopCamera();
-            hienThiKetQua(snap.val().url, "Soundcode Hệ Thống");
-        }
-        window.isCheckingDB = false;
+    let isChecking = false;
+    async function checkDB(id, isStatic) {
+        if(isChecking) return; isChecking = true;
+        try {
+            const snap = await db.ref('soundCodes/'+id).once('value');
+            if(snap.exists()) {
+                stopCamera();
+                hienThiKetQua(snap.val().url, "Soundcode Hệ Thống");
+            } else if (isStatic) {
+                document.getElementById('linkContainer').innerHTML = "<span style='color: #ff4444;'>❌ Mã này không có trên hệ thống!</span>";
+            }
+        } catch (e) { console.error(e); }
+        isChecking = false;
     }
 
-    function stopCamera() {
-        isScanning = false;
-        if(html5QrCode) {
-            html5QrCode.stop().then(() => {
-                document.getElementById('scannerContainer').style.display = "none";
-            }).catch(e => console.error(e));
-        }
-    }
-
+    // --- 6. HIỂN THỊ KẾT QUẢ ---
     function hienThiKetQua(data, type) {
         document.getElementById("decodeResult").style.display = "block";
         const isLink = data.startsWith('http');
         document.getElementById('linkContainer').innerHTML = `
-            <p style="font-size:10px; color:var(--text-muted);">${type}</p>
-            ${isLink ? `<a href="${data}" target="_blank" class="result-link">Mở Liên Kết</a>` : `<b>Mã:</b> ${data}`}
+            <p style="font-size: 12px; color: #888; margin-bottom: 5px;">Loại mã: ${type}</p>
+            ${isLink ? `<a href="${data}" target="_blank" style="color:#FF9500; font-weight:bold; font-size:18px; text-decoration:none;">🔗 MỞ LIÊN KẾT</a>` : `<b style="font-size:18px;">${data}</b>`}
         `;
     }
-
-    // 6. Quản lý Điều khoản
-    const CURRENT_TERMS_VERSION = "2";
-    window.addEventListener('load', () => {
-        if (localStorage.getItem('soundcode_terms_version') !== CURRENT_TERMS_VERSION) {
-            document.getElementById('termsOverlay').style.display = 'flex';
-        }
-    });
-    function dongYDieuKhoan() {
-        localStorage.setItem('soundcode_terms_version', CURRENT_TERMS_VERSION);
-        document.getElementById('termsOverlay').style.display = 'none';
-    }
-    function tuChoi() { alert("Cần đồng ý để dùng app."); window.location.href="about:blank"; }
 </script>
 </body>
 </html>
+
 
 
 
