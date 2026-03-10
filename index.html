@@ -69,7 +69,19 @@
         .close-btn { position: absolute; top: 40px; right: 20px; background: rgba(0,0,0,0.8); color: #fff; border: 1px solid #fff; padding: 8px 20px; border-radius: 8px; font-weight: 800; font-size: 11px; z-index: 10000; text-transform: uppercase; }
         
         .scan-frame { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 400px; height: 150px; border: 2px solid var(--btn-bg); border-radius: 16px; z-index: 9999; box-shadow: 0 0 0 10000px rgba(0,0,0,0.75); }
-        .laser { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--laser-color); box-shadow: 0 0 15px 3px var(--laser-color); animation: scanline 2.5s infinite ease-in-out; }
+        
+        /* CẬP NHẬT THANH LASER CHẠY LÊN XUỐNG */
+        .laser { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 2px; 
+            background: var(--laser-color); 
+            box-shadow: 0 0 15px 3px var(--laser-color); 
+            animation: scanline 2.5s infinite ease-in-out; /* Dòng này đã được kích hoạt lại */
+        }
+        @keyframes scanline { 
+            0%, 100% { transform: translateY(0); opacity: 0; } 
+            10%, 90% { opacity: 1; } 
+            50% { transform: translateY(148px); } 
+        }
         
         .result-box { margin-top: 20px; background: var(--bg-input); padding: 15px; border-radius: 12px; border: 2px solid var(--btn-bg); display: none; }
         .result-link { color: var(--btn-bg); font-weight: 800; font-size: 18px; display: block; margin-top: 10px; text-decoration: none; text-transform: uppercase; }
@@ -157,29 +169,23 @@
         } catch (e) { alert("Lỗi kết nối!"); }
     }
 
-    // --- HÀM VẼ LOGO MẶC ĐỊNH (ĐÃ NÂNG CẤP KÍCH THƯỚC) ---
     function drawBrandLogo(ctx, x, y, radius, color) {
-        // Vẽ vòng tròn nền logo
         ctx.beginPath();
         ctx.arc(x, y, radius, 0, Math.PI * 2);
         ctx.fillStyle = color;
         ctx.fill();
 
-        // Vẽ biểu tượng sóng âm màu cam (To hơn)
         ctx.fillStyle = "#FF9500";
-        // Tăng chiều rộng vạch sóng và chiều cao tối đa
-        const barW = 5; 
-        const bars = [18, 32, 24, 38, 20]; // Chiều cao các vạch sóng (Tăng đáng kể)
+        const barW = 5.2; 
+        const gap = 6.8; 
+        const bars = [14, 42, 22, 48, 30, 16]; 
         
-        // Mở rộng khoảng cách giữa các vạch để chiếm nhiều không gian hơn
-        const gap = 9;
         const totalW = (barW * bars.length) + (gap * (bars.length - 1));
         let startX = x - totalW / 2;
         
         bars.forEach(h => {
             ctx.beginPath();
-            // Tăng bán kính bo góc để phù hợp với độ dày mới
-            ctx.roundRect(startX, y - h/2, barW, h, 3);
+            ctx.roundRect(startX, y - h/2, barW, h, 2);
             ctx.fill();
             startX += barW + gap;
         });
@@ -193,7 +199,6 @@
         ctx.fillStyle = bgColor; ctx.fillRect(0, 0, canvas.width, canvas.height);
         const cy = canvas.height/2; const logoX = 65; const logoRadius = 40;
 
-        // Vẽ Logo Thương Hiệu mặc định
         drawBrandLogo(ctx, logoX, cy, logoRadius, fgColor);
 
         ctx.fillStyle = fgColor; let startX = 145;
