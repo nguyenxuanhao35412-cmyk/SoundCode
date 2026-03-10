@@ -27,54 +27,22 @@
             --btn-text: #ffffff; 
         }
 
-        /* KHỬ LỖI CHỮ TO NHỎ */
         body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background: var(--bg-main); 
-            color: var(--text-main); 
-            text-align: center; 
-            padding: 10px; 
-            margin: 0; 
-            transition: background-color 0.4s;
-            -webkit-font-smoothing: antialiased; /* Làm mịn chữ trên Mac/iPhone */
-            -moz-osx-font-smoothing: grayscale;
-            line-height: 1.5; /* Cố định chiều cao dòng */
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg-main); color: var(--text-main); text-align: center; 
+            padding: 10px; margin: 0; transition: background-color 0.4s;
+            -webkit-font-smoothing: antialiased; line-height: 1.6;
         }
 
-        .container { max-width: 600px; margin: 20px auto; background: var(--bg-container); padding: 25px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); position: relative; overflow: hidden; }
+        .container { max-width: 600px; margin: 20px auto; background: var(--bg-container); padding: 25px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); position: relative; }
 
-        /* HEADER CHÍNH GIỮA */
-        .app-header {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 0 30px 0;
-            min-height: 50px;
-        }
-        h1 {
-            margin: 0;
-            color: var(--text-title);
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            font-size: 22px;
-            font-weight: 800;
-            display: block;
-            width: 100%;
-        }
+        .app-header { position: relative; display: flex; align-items: center; justify-content: center; padding: 10px 0 30px 0; min-height: 50px; }
+        h1 { margin: 0; color: var(--text-title); letter-spacing: 4px; text-transform: uppercase; font-size: 22px; font-weight: 800; width: 100%; }
+        
         .theme-btn {
-            position: absolute;
-            right: 0;
-            background: var(--bg-section);
-            color: var(--text-title);
-            border: 1px solid var(--border-color);
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-size: 10px;
-            cursor: pointer;
-            font-weight: 700;
-            text-transform: uppercase;
-            z-index: 10;
+            position: absolute; right: 0; background: var(--bg-section); color: var(--text-title);
+            border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 12px;
+            font-size: 10px; cursor: pointer; font-weight: 700; text-transform: uppercase; z-index: 10;
         }
 
         .section { margin-bottom: 30px; padding: 20px; background: var(--bg-section); border-radius: 18px; border: 1px solid var(--border-color); }
@@ -92,7 +60,6 @@
             border-radius: 10px; margin: 5px; transition: 0.2s; box-shadow: 0 5px 15px var(--highlight-glow);
             font-family: inherit;
         }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255, 149, 0, 0.4); }
 
         .file-upload-label { 
             background: var(--bg-input); color: var(--text-muted); padding: 12px; border-radius: 10px; 
@@ -103,14 +70,12 @@
         #encodeCanvas { background: var(--bg-main); margin-top: 20px; border-radius: 12px; max-width: 100%; display: none; }
         .drop-zone { width: 85%; margin: 10px auto; padding: 40px 10px; border: 2px dashed var(--btn-bg); border-radius: 15px; background: rgba(255, 149, 0, 0.05); color: var(--text-title); font-weight: 700; cursor: pointer; font-size: 12px; text-transform: uppercase; }
 
-        /* SCANNER FULLSCREEN */
         .scanner-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; z-index: 9999; background: #000; }
         .scanner-container video { width: 100%; height: 100%; object-fit: cover; }
         .close-btn { position: absolute; top: 40px; right: 20px; background: rgba(0,0,0,0.8); color: #fff; border: 1px solid #fff; padding: 8px 20px; border-radius: 8px; font-weight: 800; font-size: 11px; z-index: 10000; text-transform: uppercase; }
         
         .scan-frame { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 400px; height: 150px; border: 2px solid var(--btn-bg); border-radius: 16px; z-index: 9999; box-shadow: 0 0 0 10000px rgba(0,0,0,0.75); }
         .laser { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--laser-color); box-shadow: 0 0 15px 3px var(--laser-color); animation: scanline 2.5s infinite ease-in-out; }
-        @keyframes scanline { 0%, 100% { transform: translateY(0); opacity: 0; } 10%, 90% { opacity: 1; } 50% { transform: translateY(148px); } }
         
         .result-box { margin-top: 20px; background: var(--bg-input); padding: 15px; border-radius: 12px; border: 2px solid var(--btn-bg); display: none; }
         .result-link { color: var(--btn-bg); font-weight: 800; font-size: 18px; display: block; margin-top: 10px; text-decoration: none; text-transform: uppercase; }
@@ -131,7 +96,7 @@
         <h2>1. Tạo mã Soundcode</h2>
         <label for="logoInput" class="file-upload-label">Chọn Logo (Tùy chọn)</label>
         <input type="file" id="logoInput" accept="image/*" style="display: none;">
-        <input type="text" id="linkInput" placeholder="Dán link Facebook vào đây...">
+        <input type="text" id="linkInput" placeholder="Dán link Facebook của bạn...">
         <button class="btn-primary" onclick="generateSoundcode()">Mã hóa và Lưu</button>
         <button class="btn-primary" onclick="downloadCode()" id="dlBtn" style="display:none; background: #333; color: #fff;">Tải ảnh</button>
         <canvas id="encodeCanvas" width="550" height="150"></canvas>
@@ -195,9 +160,16 @@
         reader.readAsDataURL(file);
     });
 
+    // --- SỬA LỖI NHẬN LINK FACEBOOK ---
     async function generateSoundcode() {
         const url = document.getElementById("linkInput").value.trim();
-        if (!url || !url.includes("fb")) { alert("Vui lòng nhập link Facebook!"); return; }
+        // Kiểm tra linh hoạt hơn: Chỉ cần có facebook.com hoặc fb.com hoặc fb.watch...
+        const fbRegex = /(facebook\.com|fb\.com|fb\.watch)/;
+        if (!url || !fbRegex.test(url.toLowerCase())) { 
+            alert("Link Facebook không hợp lệ! Vui lòng copy đúng link từ trình duyệt hoặc app."); 
+            return; 
+        }
+        
         try {
             const snap = await db.ref('soundCodes').orderByChild('url').equalTo(url).once('value');
             let id = snap.exists() ? Object.keys(snap.val())[0] : null;
@@ -206,7 +178,7 @@
                 await db.ref('soundCodes/' + id).set({ url, createdAt: new Date().toISOString() });
             }
             window.currentSecretId = id; drawBarcodeGraphics(id);
-        } catch (e) { alert("Lỗi kết nối!"); }
+        } catch (e) { alert("Lỗi hệ thống! Vui lòng thử lại."); }
     }
 
     function drawBarcodeGraphics(id) {
@@ -215,7 +187,6 @@
         const bgColor = isLight ? "#ffffff" : "#000000"; const fgColor = isLight ? "#000000" : "#ffffff";
         ctx.fillStyle = bgColor; ctx.fillRect(0, 0, canvas.width, canvas.height);
         const cy = canvas.height/2; const logoX = 65; const logoRadius = 40;
-
         ctx.save(); ctx.beginPath(); ctx.arc(logoX, cy, logoRadius, 0, Math.PI * 2);
         if (userCustomLogo) {
             ctx.clip(); const aspect = userCustomLogo.width / userCustomLogo.height;
@@ -223,7 +194,6 @@
             ctx.drawImage(userCustomLogo, logoX - dW/2, cy - dH/2, dW, dH);
         } else { ctx.fillStyle = fgColor; ctx.fill(); }
         ctx.restore();
-
         ctx.fillStyle = fgColor; let x = 145;
         for (let i = -1; i <= 15; i++) {
             let hR = (i === -1 || i === 15) ? 1.0 : (parseInt(id[i]) + 1) / 10;
@@ -239,10 +209,8 @@
 
     const dropZone = document.getElementById('dropZone'); const fileInput = document.getElementById('fileInput');
     const scanCanvas = document.getElementById('hiddenScanCanvas'); const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
-
     dropZone.onclick = () => fileInput.click();
     fileInput.onchange = (e) => { if (e.target.files[0]) handleImageFile(e.target.files[0]); };
-
     function handleImageFile(file) {
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -257,15 +225,12 @@
         };
         reader.readAsDataURL(file);
     }
-
     function executeStaticScan() {
         document.getElementById('decodeResult').style.display = "block";
         document.getElementById('linkContainer').innerHTML = "Đang phân tích...";
         setTimeout(() => attemptDecode(true), 1000);
     }
-
     const video = document.getElementById('videoFeed'); let isScanning = false;
-
     async function startCamera() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 } } });
@@ -274,12 +239,10 @@
             isScanning = true; requestAnimationFrame(scanLoop);
         } catch (e) { alert("Lỗi Camera!"); }
     }
-
     function stopCamera() {
         isScanning = false; if(video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
         document.getElementById('scannerContainer').style.display = "none";
     }
-
     function scanLoop() {
         if(!isScanning) return;
         if(video.videoWidth > 0) {
@@ -288,12 +251,10 @@
         }
         setTimeout(() => requestAnimationFrame(scanLoop), 200);
     }
-
     function attemptDecode(isStatic) {
         const data = scanCtx.getImageData(0, scanCanvas.height/2, scanCanvas.width, 1).data;
         let edge = 0; for(let i=0; i<10; i++) edge += (data[i*4] + data[i*4+1] + data[i*4+2]) / 3;
         const isWhite = (edge/10) > 127;
-        
         let bars = []; let inB = false; let s = 0;
         for(let x=0; x<scanCanvas.width; x++) {
             let p = (data[x*4] + data[x*4+1] + data[x*4+2]) / 3;
@@ -311,7 +272,6 @@
             checkDB(id, isStatic);
         } else if(isStatic) document.getElementById('linkContainer').innerHTML = "Không tìm thấy mã!";
     }
-
     function getH(x, isW) {
         const img = scanCtx.getImageData(x, 0, 1, scanCanvas.height).data;
         const m = scanCanvas.height/2; let h = 0;
@@ -319,7 +279,6 @@
         for(let y=m+1; y<scanCanvas.height; y++) { let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3; if(isW ? p<100 : p>150) h++; else break; }
         return h;
     }
-
     async function checkDB(id, isStatic) {
         try {
             const snap = await db.ref('soundCodes/'+id).once('value');
