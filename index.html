@@ -112,13 +112,13 @@
 <div style="color:#888; font-size:14px; text-align:left; margin:20px 0; max-height:200px; overflow-y:auto; padding-right:10px;">
 Chào mừng sếp đến với SoundCode!
 
-- Chúng tôi cung cấp dịch vụ chuyển hoá đường dẫn, liên kết Facebook thành các đoạn mã vạch được mã hoá có dạng sóng âm.
-- Chúng tôi không lưu hình ảnh của sếp.
+- Chúng tôi cung cấp dịch vụ chuyển hoá đường dẫn, liên kết Facebook thành các đoạn mã vạch được mã hoá có hình dạng giọng nói thu âm.
+- Chúng tôi không lưu hình ảnh của bạn.
 - Xin lưu ý: App cần dùng <b>Camera</b> để quét mã.
 - Và mã vạch chỉ có thể quét bằng phần mềm của chúng tôi.
 - Thông tin duy nhất được lưu vào hệ thống là link FB.    
 - Nếu lo ngại về vấn đề lộ link fb thì vui lòng không dùng.
-- Sếp cam kết không tạo mã cho link lừa đảo.
+- Xin hãy cam kết không tạo mã cho link lừa đảo.
 - Bấm "Đồng ý" để bắt đầu trải nghiệm nhé!
 </div>
 <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -138,7 +138,7 @@ Chào mừng sếp đến với SoundCode!
         <h2>1. Tạo mã Soundcode</h2>
         <input type="text" id="linkInput" placeholder="Dán link Facebook vào đây...">
         <br>
-        <button class="btn-primary" onclick="generateSoundcode()">Mã hóa và Lưu</button>
+        <button class="btn-primary" onclick="generateSoundcode()">Mã hóa liên kết</button>
         <button class="btn-primary" onclick="downloadCode()" id="dlBtn" style="display:none; background: #333; color: #fff;">Tải ảnh</button>
         <canvas id="encodeCanvas" width="550" height="150"></canvas>
     </div>
@@ -385,12 +385,13 @@ document.getElementById('termsOverlay').style.display = 'none';
 }
 
 function tuChoi() {
-alert("Sếp cần đồng ý với điều khoản mới nhất để tiếp tục sử dụng.");
+alert("Bạn cần đồng ý với điều khoản mới nhất để tiếp tục sử dụng.");
 window.location.href = "about:blank";
 }
 </script>
 </body>
 </html>
+
 
 
 
