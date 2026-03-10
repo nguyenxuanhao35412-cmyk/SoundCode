@@ -93,9 +93,9 @@
             - Bấm "Đồng ý" để bắt đầu trải nghiệm nhé!
         </div>
         <div style="display: flex; gap: 10px; margin-top: 20px;">
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-            <button onclick="tuChoi()" style="background:#333; color:#fff; border:1px solid #444; padding:12px; flex:1; border-radius:12px; font-weight:600; cursor:pointer; font-family: inherit;">TỪ CHỐI</button>
-            <button onclick="dongYDieuKhoan()" style="background:#FF9500; color:#000; border:none; padding:12px; flex:2; border-radius:12px; font-weight:800; cursor:pointer; font-size: 16px; font-family: inherit; text-transform: uppercase;">ĐỒNG Ý</button>
+            <div style="display: flex; gap: 15px; margin-top: 20px; width: 100%;">
+            <button onclick="tuChoi()" style="background:#333; color:#fff; border:1px solid #444; padding:12px; flex:1; border-radius:12px; font-weight:600; cursor:pointer; font-family: inherit; font-size: 14px;">TỪ CHỐI</button>
+            <button onclick="dongYDieuKhoan()" style="background:#FF9500; color:#000; border:none; padding:12px; flex:1; border-radius:12px; font-weight:800; cursor:pointer; font-size: 14px; font-family: inherit; text-transform: uppercase;">ĐỒNG Ý</button>
         </div>
         </div>
     </div>
@@ -407,12 +407,13 @@
         isChecking = false;
     }
 
-    window.addEventListener('load', () => { if (localStorage.getItem('soundcode_terms_version') !== "5") document.getElementById('termsOverlay').style.display = 'flex'; });
+    window.addEventListener('load', () => { if (localStorage.getItem('soundcode_terms_version') !== "6") document.getElementById('termsOverlay').style.display = 'flex'; });
     function dongYDieuKhoan() { localStorage.setItem('soundcode_terms_version', "3"); document.getElementById('termsOverlay').style.display = 'none'; }
     function tuChoi() { alert("Bạn cần đồng ý!"); window.location.href = "about:blank"; }
 </script>
 </body>
 </html>
+
 
 
 
