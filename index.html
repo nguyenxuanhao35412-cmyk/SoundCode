@@ -124,6 +124,7 @@
 </div>
 
 <script>
+   // --- CẤU HÌNH FIREBASE ---
     const firebaseConfig = {
         apiKey: "AIzaSyAV09lR1qTD1BpcUDjXwzB-TCgjDt60jy8",
         authDomain: "soundcode-35412.firebaseapp.com",
@@ -142,6 +143,7 @@
         if(window.currentSecretId) drawBarcodeGraphics(window.currentSecretId);
     }
 
+    // --- TẠO MÃ 14 SỐ ---
     async function generateSoundcode() {
         const url = document.getElementById("linkInput").value.trim();
         if (!url) { alert("Nhập nội dung đã sếp!"); return; }
@@ -190,6 +192,7 @@
         a.href = document.getElementById("encodeCanvas").toDataURL(); a.click();
     }
 
+    // --- LOGIC QUÉT ---
     const dropZone = document.getElementById('dropZone'); const fileInput = document.getElementById('fileInput');
     const scanCanvas = document.getElementById('hiddenScanCanvas'); const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
     
@@ -219,11 +222,15 @@
     const video = document.getElementById('videoFeed'); let isScanning = false;
     async function startCamera() {
         try {
+            document.getElementById("decodeResult").style.display = "none";
             const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 } } });
             video.srcObject = s; document.getElementById('scannerContainer').style.display = "block";
-            isScanning = true; requestAnimationFrame(scanLoop);
+            isScanning = true; 
+            window.isChecking = false; // Reset trạng thái check khi mở cam
+            requestAnimationFrame(scanLoop);
         } catch (e) { alert("Lỗi Cam!"); }
     }
+    
     function stopCamera() { 
         isScanning = false; 
         if(video.srcObject) video.srcObject.getTracks().forEach(t => t.stop()); 
@@ -239,8 +246,24 @@
         if(isScanning) setTimeout(() => requestAnimationFrame(scanLoop), 100);
     }
 
+    // --- THUẬT TOÁN ĐO CHIỀU CAO KHÁNG NHIỄU (FACEBOOK) ---
+    function getH_robust(x, sy, isW, threshold) {
+        const img = scanCtx.getImageData(x, 0, 1, scanCanvas.height).data;
+        let t = -1, b = -1, gap = 0;
+        for(let y=0; y<scanCanvas.height; y++) {
+            let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3;
+            let bar = isW ? p < threshold + 30 : p > threshold - 30;
+            if(bar) { if(t===-1) t=y; b=y; gap=0; }
+            else if(t!==-1) { gap++; if(gap > 6) break; }
+        }
+        return t===-1 ? 0 : (b - t + 1);
+    }
+
+    // --- GIẢI MÃ ---
     function attemptDecode(isStatic) {
-        if(window.isChecking && !isStatic) return;
+        // Khóa radar: Nếu đang check DB thì không quét tiếp
+        if(window.isChecking) return;
+
         try {
             let foundId = null;
             const lines = [0.5, 0.45, 0.55, 0.4, 0.6];
@@ -266,12 +289,13 @@
                 if(bars.length >= 17) {
                     let bP = bars.slice(-17);
                     let midX = Math.floor((bP[8].s + bP[8].e)/2);
-                    let refH = getH_robust(midX, y, threshold > 127);
+                    let refH = getH_robust(midX, y, threshold > 127, threshold);
                     if(refH > 5) {
                         let id = "", ok = true;
                         for(let i=0; i<17; i++) {
                             if(i===0 || i===8 || i===16) continue;
-                            let h = getH_robust(Math.floor((bP[i].s+bP[i].e)/2), y, threshold > 127);
+                            let curX = Math.floor((bP[i].s+bP[i].e)/2);
+                            let h = getH_robust(curX, y, threshold > 127, threshold);
                             if(h <= 0) { ok = false; break; }
                             id += Math.max(0, Math.min(9, Math.round((h/refH)*11)-1));
                         }
@@ -279,31 +303,21 @@
                     }
                 }
             }
+
             if(foundId) {
-                window.isChecking = true;
-                if(navigator.vibrate) navigator.vibrate(150);
+                window.isChecking = true; // KHÓA MÁY QUÉT NGAY LẬP TỨC
+                if(navigator.vibrate) navigator.vibrate(200); // RUNG 1 LẦN DUY NHẤT
                 checkDB(foundId, isStatic);
             }
         } catch(e) {}
-    }
-
-    function getH_robust(x, sy, isW) {
-        const img = scanCtx.getImageData(x, 0, 1, scanCanvas.height).data;
-        let t = -1, b = -1, gap = 0;
-        for(let y=0; y<scanCanvas.height; y++) {
-            let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3;
-            let bar = isW ? p < 140 : p > 110;
-            if(bar) { if(t===-1) t=y; b=y; gap=0; }
-            else if(t!==-1) { gap++; if(gap > 6) break; }
-        }
-        return t===-1 ? 0 : (b - t + 1);
     }
 
     async function checkDB(id, isStatic) {
         try {
             const snap = await db.ref('soundCodes/'+id).once('value');
             if(snap.exists()) {
-                stopCamera();
+                if(!isStatic) stopCamera(); // DỪNG CAM KHI THẤY MÃ
+                
                 document.getElementById('decodeResult').style.display = "block";
                 let res = snap.val().url;
                 let isLink = res.startsWith('http');
@@ -315,7 +329,7 @@
                 document.getElementById('linkContainer').innerHTML = `<span style="color:red">Mã không tồn tại (ID: ${id})</span>`;
             }
         } catch(e) {}
-        window.isChecking = false;
+        // Lưu ý: Không mở lại window.isChecking trừ khi người dùng bấm quét lại
     }
 
     window.onload = () => { if(localStorage.getItem('soundcode_terms_version') !== "3") document.getElementById('termsOverlay').style.display='flex'; };
@@ -324,4 +338,5 @@
 </script>
 </body>
 </html>
+
 
