@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Soundcode - V3 Pro Scanner</title>
+    
     <link rel="icon" type="image/png" href="https://github.com/nguyenxuanhao35412-cmyk/SoundCode/raw/main/icon-512.png?raw=true">
     <link rel="apple-touch-icon" href="https://github.com/nguyenxuanhao35412-cmyk/SoundCode/raw/main/icon-512.png?raw=true">
+
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -38,46 +40,26 @@
 
         .container { max-width: 600px; margin: 20px auto; background: var(--bg-container); padding: 25px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); position: relative; }
 
-        .app-header { 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            padding: 10px 0 25px 0; margin-bottom: 25px; border-bottom: 1px solid var(--border-color);
-        }
+        .app-header { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 0 25px 0; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); }
         h1 { margin: 0 0 15px 0; color: var(--text-title); letter-spacing: 4px; text-transform: uppercase; font-size: 26px; font-weight: 800; text-align: center; }
         
         .theme-btn {
-            position: relative; background: var(--bg-section); color: var(--text-title);
-            border: 1px solid var(--border-color); padding: 8px 18px; border-radius: 20px;
-            font-size: 11px; cursor: pointer; font-weight: 700; text-transform: uppercase; 
-            transition: 0.3s; white-space: nowrap; 
+            background: var(--bg-section); color: var(--text-title); border: 1px solid var(--border-color); 
+            padding: 8px 18px; border-radius: 20px; font-size: 11px; cursor: pointer; font-weight: 700; 
+            text-transform: uppercase; transition: 0.3s; white-space: nowrap; 
         }
         .theme-btn:hover { border-color: var(--btn-bg); color: var(--btn-bg); }
 
         .section { margin-bottom: 30px; padding: 20px; background: var(--bg-section); border-radius: 18px; border: 1px solid var(--border-color); }
         h2 { font-size: 12px; margin-top: 0; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 20px; font-weight: 600; }
         
-        input[type="text"] { 
-            width: 90%; padding: 14px; background: var(--bg-input); border: 2px solid var(--btn-bg); 
-            color: var(--text-main); font-size: 15px; border-radius: 12px; margin-bottom: 15px; 
-            box-shadow: 0 0 10px var(--highlight-glow); outline: none; font-family: inherit;
-        }
-        
-        .btn-primary { 
-            background: var(--btn-bg); color: var(--btn-text); border: none; padding: 14px 28px; 
-            font-size: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; 
-            border-radius: 10px; margin: 5px; transition: 0.2s; box-shadow: 0 5px 15px var(--highlight-glow); font-family: inherit;
-        }
+        input[type="text"] { width: 90%; padding: 14px; background: var(--bg-input); border: 2px solid var(--btn-bg); color: var(--text-main); font-size: 15px; border-radius: 12px; margin-bottom: 15px; outline: none; font-family: inherit; }
+        .btn-primary { background: var(--btn-bg); color: var(--btn-text); border: none; padding: 14px 28px; font-size: 14px; font-weight: 800; text-transform: uppercase; cursor: pointer; border-radius: 10px; margin: 5px; transition: 0.2s; box-shadow: 0 5px 15px var(--highlight-glow); font-family: inherit; }
 
         #encodeCanvas { background: var(--bg-main); margin-top: 20px; border-radius: 12px; max-width: 100%; display: none; }
         
-        /* Dropzone CSS */
-        .drop-zone { 
-            width: 85%; margin: 10px auto; padding: 40px 10px; border: 2px dashed var(--btn-bg); 
-            border-radius: 15px; background: rgba(255, 149, 0, 0.05); color: var(--text-title); 
-            font-weight: 700; cursor: pointer; font-size: 12px; text-transform: uppercase;
-            transition: all 0.2s ease;
-        }
+        .drop-zone { width: 85%; margin: 10px auto; padding: 40px 10px; border: 2px dashed var(--btn-bg); border-radius: 15px; background: rgba(255, 149, 0, 0.05); color: var(--text-title); font-weight: 700; cursor: pointer; font-size: 12px; text-transform: uppercase; transition: all 0.2s ease; }
 
-        /* Camera CSS */
         .scanner-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; z-index: 9999; background: #000; }
         .scanner-container video { width: 100%; height: 100%; object-fit: cover; }
         .close-btn { position: absolute; top: 40px; right: 20px; background: rgba(0,0,0,0.8); color: #fff; border: 1px solid #fff; padding: 8px 20px; border-radius: 8px; font-weight: 800; font-size: 11px; z-index: 10000; text-transform: uppercase; cursor: pointer; }
@@ -88,6 +70,10 @@
         
         .result-box { margin-top: 20px; background: var(--bg-input); padding: 15px; border-radius: 12px; border: 2px solid var(--btn-bg); display: none; }
         .result-link { color: var(--btn-bg); font-weight: 800; font-size: 18px; display: block; margin-top: 10px; text-decoration: none; text-transform: uppercase; }
+        .result-text { color: var(--btn-bg); font-weight: 800; font-size: 16px; word-break: break-word; margin-top: 10px; }
+        
+        .copy-btn { background: #333; color: #fff; border: none; padding: 8px 15px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; text-transform: uppercase; transition: 0.2s; margin-top: 15px; }
+        .copy-btn:hover { background: #555; }
     </style>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -100,18 +86,15 @@
         <h2 style="color:#fff; margin-top:0;">📜 ĐIỀU KHOẢN</h2>
         <div style="color:#888; font-size:14px; text-align:left; margin:20px 0; max-height:200px; overflow-y:auto; padding-right:10px;">
             Chào mừng sếp đến với SoundCode!<br><br>
-            - Chúng tôi cung cấp dịch vụ chuyển hoá đường dẫn, liên kết Facebook thành các đoạn mã vạch được mã hoá có hình dạng giọng nói thu âm.<br>
-            - Chúng tôi không lưu hình ảnh của bạn.<br>
-            - Xin lưu ý: App cần dùng <b>Camera</b> để quét mã.<br>
-            - Và mã vạch chỉ có thể quét bằng phần mềm của chúng tôi.<br>
-            - Thông tin duy nhất được lưu vào hệ thống là link FB. <br>   
-            - Nếu lo ngại về vấn đề lộ link fb thì vui lòng không dùng.<br>
-            - Xin hãy cam kết không tạo mã cho link lừa đảo.<br>
+            - Dịch vụ chuyển hoá mọi đường dẫn (URL) hoặc văn bản bí mật thành mã vạch giọng nói.<br>
+            - App cần dùng <b>Camera</b> hoặc tải ảnh lên để quét mã.<br>
+            - Dữ liệu duy nhất được lưu là nội dung bạn nhập vào.<br>
+            - Xin hãy cam kết không tạo mã cho nội dung lừa đảo độc hại.<br>
             - Bấm "Đồng ý" để bắt đầu trải nghiệm nhé!
         </div>
         <div style="display: flex; gap: 10px; margin-top: 20px;">
             <button onclick="tuChoi()" style="background:#333; color:#fff; border:1px solid #444; padding:12px; flex:1; border-radius:12px; font-weight:600; cursor:pointer;">TỪ CHỐI</button>
-            <button onclick="dongYDieuKhoan()" style="background:#FF9500; color:#000; border:none; padding:12px; flex:2; border-radius:12px; font-weight:800; cursor:pointer;font-family: 'Inter', sans-serif;font-size: 16px; text-transform: uppercase;">ĐỒNG Ý</button>
+            <button onclick="dongYDieuKhoan()" style="background:#FF9500; color:#000; border:none; padding:12px; flex:2; border-radius:12px; font-weight:800; cursor:pointer;font-size: 16px;">ĐỒNG Ý</button>
         </div>
     </div>
 </div>
@@ -123,17 +106,16 @@
     </div>
 
     <div class="section">
-        <h2>1. Tạo mã Soundcode</h2>
-        <input type="text" id="linkInput" placeholder="Dán link Facebook vào đây...">
+        <h2>1. Tạo mã Soundcode (Đa Năng)</h2>
+        <input type="text" id="linkInput" placeholder="Dán link hoặc nhập văn bản bí mật...">
         <br>
-        <button class="btn-primary" onclick="generateSoundcode()">Mã hóa liên kết</button>
+        <button class="btn-primary" onclick="generateSoundcode()">Tạo Mã Mới</button>
         <button class="btn-primary" onclick="downloadCode()" id="dlBtn" style="display:none; background: #333; color: #fff;">Tải ảnh</button>
         <canvas id="encodeCanvas" width="550" height="150"></canvas>
     </div>
 
     <div class="section">
         <h2>2. Máy quét Soundcode</h2>
-        
         <div id="dropZone" class="drop-zone">Kéo thả hoặc Bấm để chọn ảnh</div>
         <input type="file" id="fileInput" accept="image/*" style="display: none;">
         
@@ -144,7 +126,6 @@
         </div>
 
         <div style="margin: 20px 0; color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: 2px;">HOẶC</div>
-        
         <button class="btn-primary" onclick="startCamera()">Quét trực tiếp</button>
         
         <div class="scanner-container" id="scannerContainer">
@@ -154,19 +135,14 @@
         </div>
         
         <canvas id="hiddenScanCanvas" style="display: none;"></canvas>
-        
         <div class="result-box" id="decodeResult"><div id="linkContainer"></div></div>
     </div>
 </div>
 
 <script>
-    // ==========================================
-    // 1. GIAO DIỆN & CẤU HÌNH
-    // ==========================================
     function toggleTheme() {
-        const body = document.body; const btn = document.getElementById('themeBtn');
-        body.classList.toggle('light-mode');
-        btn.innerText = body.classList.contains('light-mode') ? "GIAO DIỆN TỐI" : "GIAO DIỆN SÁNG";
+        document.body.classList.toggle('light-mode');
+        document.getElementById('themeBtn').innerText = document.body.classList.contains('light-mode') ? "GIAO DIỆN TỐI" : "GIAO DIỆN SÁNG";
         if(window.currentSecretId) drawBarcodeGraphics(window.currentSecretId);
     }
 
@@ -184,64 +160,49 @@
 
     window.currentSecretId = null; 
 
-    // ==========================================
-    // 2. TẠO MÃ & VẼ ĐỒ HỌA
-    // ==========================================
     async function generateSoundcode() {
         const url = document.getElementById("linkInput").value.trim();
-        const fbRegex = /(facebook\.com|fb\.com|fb\.watch)/;
-        if (!url || !fbRegex.test(url.toLowerCase())) { alert("Link Facebook không hợp lệ!"); return; }
+        if (!url) { alert("Vui lòng nhập đường link hoặc văn bản!"); return; }
         
         try {
             const snap = await db.ref('soundCodes').orderByChild('url').equalTo(url).once('value');
             let id = snap.exists() ? Object.keys(snap.val())[0] : null;
             if (!id) {
-                id = ""; 
-                for (let i = 0; i < 14; i++) id += Math.floor(Math.random() * 10); // Tạo 14 chữ số
+                id = ""; for (let i = 0; i < 14; i++) id += Math.floor(Math.random() * 10);
                 await db.ref('soundCodes/' + id).set({ url, createdAt: new Date().toISOString() });
             }
             window.currentSecretId = id; drawBarcodeGraphics(id);
-        } catch (e) { alert("Lỗi kết nối Firebase!"); }
+        } catch (e) { alert("Lỗi kết nối!"); }
     }
 
     function drawBrandLogo(ctx, x, y, radius, color) {
         ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
         ctx.fillStyle = "#FF9500";
-        const barW = 5.2; const gap = 6.8; const bars = [14, 42, 22, 48, 30, 16]; 
-        const totalW = (barW * bars.length) + (gap * (bars.length - 1));
-        let startX = x - totalW / 2;
-        
+        const bars = [14, 42, 22, 48, 30, 16]; 
+        let startX = x - ((5.2 * 6) + (6.8 * 5)) / 2;
         bars.forEach(h => {
             ctx.beginPath();
-            if(ctx.roundRect) { ctx.roundRect(startX, y - h/2, barW, h, 2); } 
-            else { ctx.rect(startX, y - h/2, barW, h); }
-            ctx.fill(); startX += barW + gap;
+            if(ctx.roundRect) ctx.roundRect(startX, y - h/2, 5.2, h, 2); 
+            else ctx.rect(startX, y - h/2, 5.2, h);
+            ctx.fill(); startX += 12;
         });
     }
 
     function drawBarcodeGraphics(id) {
         const canvas = document.getElementById("encodeCanvas"); const ctx = canvas.getContext("2d");
         const isLight = document.body.classList.contains('light-mode');
-        const bgColor = isLight ? "#ffffff" : "#000000"; const fgColor = isLight ? "#000000" : "#ffffff";
+        const bg = isLight ? "#ffffff" : "#000000"; const fg = isLight ? "#000000" : "#ffffff";
         
-        ctx.fillStyle = bgColor; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        const cy = canvas.height/2; const logoX = 65; const logoRadius = 40;
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawBrandLogo(ctx, 65, canvas.height/2, 40, fg);
 
-        drawBrandLogo(ctx, logoX, cy, logoRadius, fgColor);
-
-        ctx.fillStyle = fgColor; let startX = 145;
+        ctx.fillStyle = fg; let startX = 145;
         for (let i = 0; i < 17; i++) {
-            let hR;
-            if (i === 0 || i === 16) { hR = 0.3; } // 2 đầu thấp 30%
-            else if (i === 8) { hR = 1.0; }        // Giữa cao 100% (Mốc)
-            else {
-                let dataIdx = (i < 8) ? i - 1 : i - 2;
-                hR = (parseInt(id[dataIdx]) + 1) / 11;
-            }
+            let hR = (i === 0 || i === 16) ? 0.3 : (i === 8) ? 1.0 : (parseInt(id[i < 8 ? i - 1 : i - 2]) + 1) / 11;
             let h = 55 * hR; 
             ctx.beginPath(); 
-            if(ctx.roundRect) ctx.roundRect(startX, cy - h, 8, h * 2, 4); 
-            else ctx.rect(startX, cy - h, 8, h * 2);
+            if(ctx.roundRect) ctx.roundRect(startX, canvas.height/2 - h, 8, h * 2, 4); 
+            else ctx.rect(startX, canvas.height/2 - h, 8, h * 2);
             ctx.fill(); startX += 22;
         }
         canvas.style.display = "inline-block"; document.getElementById("dlBtn").style.display = "inline-block";
@@ -252,47 +213,22 @@
         link.href = document.getElementById("encodeCanvas").toDataURL(); link.click();
     }
 
-    // ==========================================
-    // 3. XỬ LÝ UPLOAD ẢNH & KÉO THẢ (DRAG & DROP)
-    // ==========================================
-    const dropZone = document.getElementById('dropZone'); 
-    const fileInput = document.getElementById('fileInput');
-    const scanCanvas = document.getElementById('hiddenScanCanvas'); 
-    const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
+    // --- KÉO THẢ ẢNH ---
+    const dropZone = document.getElementById('dropZone'); const fileInput = document.getElementById('fileInput');
+    const scanCanvas = document.getElementById('hiddenScanCanvas'); const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
     
     dropZone.onclick = () => fileInput.click();
     fileInput.onchange = (e) => { if (e.target.files[0]) handleImageFile(e.target.files[0]); };
-
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.style.background = 'rgba(255, 149, 0, 0.2)';
-        dropZone.style.transform = 'scale(1.02)';
-    });
-
-    dropZone.addEventListener('dragleave', (e) => {
-        e.preventDefault();
-        dropZone.style.background = 'rgba(255, 149, 0, 0.05)';
-        dropZone.style.transform = 'scale(1)';
-    });
-
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.background = 'rgba(255, 149, 0, 0.2)'; });
+    dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); dropZone.style.background = 'rgba(255, 149, 0, 0.05)'; });
     dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.style.background = 'rgba(255, 149, 0, 0.05)';
-        dropZone.style.transform = 'scale(1)';
-        
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            let file = e.dataTransfer.files[0];
-            if (file.type.startsWith('image/')) {
-                handleImageFile(file);
-            } else {
-                alert("Vui lòng chỉ chọn file hình ảnh!");
-            }
-        }
+        e.preventDefault(); dropZone.style.background = 'rgba(255, 149, 0, 0.05)';
+        if (e.dataTransfer.files[0] && e.dataTransfer.files[0].type.startsWith('image/')) handleImageFile(e.dataTransfer.files[0]);
     });
 
     function handleImageFile(file) {
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = (e) => {
             const img = new Image();
             img.onload = () => {
                 document.getElementById('previewImg').src = img.src;
@@ -308,29 +244,20 @@
     function executeStaticScan() {
         document.getElementById('decodeResult').style.display = "block";
         document.getElementById('linkContainer').innerHTML = "Đang phân tích...";
-        setTimeout(() => attemptDecode(true), 1000);
+        setTimeout(() => attemptDecode(true), 100);
     }
     
-    // ==========================================
-    // 4. CAMERA THỜI GIAN THỰC
-    // ==========================================
+    // --- CAMERA ---
     const video = document.getElementById('videoFeed'); let isScanning = false;
-    
     async function startCamera() {
         try {
             document.getElementById("decodeResult").style.display = "none";
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 } } });
-            video.srcObject = stream;
-            document.getElementById('scannerContainer').style.display = "block";
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            video.srcObject = stream; document.getElementById('scannerContainer').style.display = "block";
             isScanning = true; requestAnimationFrame(scanLoop);
-        } catch (e) { alert("Lỗi Camera! Vui lòng cấp quyền hoặc kiểm tra kết nối HTTPS."); }
+        } catch (e) { alert("Lỗi Camera!"); }
     }
-    
-    function stopCamera() {
-        isScanning = false; if(video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
-        document.getElementById('scannerContainer').style.display = "none";
-    }
-    
+    function stopCamera() { isScanning = false; if(video.srcObject) video.srcObject.getTracks().forEach(t => t.stop()); document.getElementById('scannerContainer').style.display = "none"; }
     function scanLoop() {
         if(!isScanning) return;
         if(video.videoWidth > 0) {
@@ -340,131 +267,147 @@
         setTimeout(() => requestAnimationFrame(scanLoop), 200);
     }
     
-    // ==========================================
-    // 5. THUẬT TOÁN QUÉT (RADAR ĐA TẦNG)
-    // ==========================================
+    // --- THUẬT TOÁN ĐO CHIỀU CAO KHÁNG NHIỄU (FACEBOOK) ---
+    function getH_robust(midX, isW, threshold) {
+        midX = Math.floor(midX);
+        let maxH = 0;
+        
+        for(let dx = -2; dx <= 2; dx++) {
+            let x = midX + dx;
+            if(x < 0 || x >= scanCanvas.width) continue;
+            const img = scanCtx.getImageData(x, 0, 1, scanCanvas.height).data;
+            
+            let top = -1, bottom = -1;
+            let gapCount = 0;
+            
+            for(let y=0; y<scanCanvas.height; y++) {
+                let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3;
+                let isBar = isW ? (p < threshold + 30) : (p > threshold - 30); 
+                
+                if(isBar) {
+                    if(top === -1) top = y;
+                    bottom = y;
+                    gapCount = 0; 
+                } else if (top !== -1) {
+                    gapCount++;
+                    if (gapCount > 5) break;
+                }
+            }
+            let h = (top === -1) ? 0 : (bottom - top + 1);
+            if(h > maxH) maxH = h;
+        }
+        return maxH;
+    }
+
     function attemptDecode(isStatic) {
         try {
             let foundId = null;
-            // Quét 7 đường ngang khác nhau để tránh điểm mù
-            const scanLines = [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8]; 
+            const scanLines = [0.5, 0.4, 0.6, 0.3, 0.7]; 
             
             for (let ratio of scanLines) {
                 let y = Math.floor(scanCanvas.height * ratio);
                 const data = scanCtx.getImageData(0, y, scanCanvas.width, 1).data;
                 
-                let edge = 0; for(let i=0; i<10; i++) edge += (data[i*4] + data[i*4+1] + data[i*4+2]) / 3;
-                const isWhite = (edge/10) > 127;
+                let minP = 255, maxP = 0;
+                for(let i=0; i<data.length; i+=4) {
+                    let p = (data[i]+data[i+1]+data[i+2])/3;
+                    if(p < minP) minP = p; if(p > maxP) maxP = p;
+                }
+                let threshold = (minP + maxP) / 2;
+                if (maxP - minP < 30) threshold = 127; 
                 
+                let isWhite = threshold > 127; 
                 let bars = []; let inB = false; let s = 0;
+                
                 for(let x=0; x<scanCanvas.width; x++) {
                     let p = (data[x*4] + data[x*4+1] + data[x*4+2]) / 3;
-                    let isBar = isWhite ? (p < 100) : (p > 150);
+                    let isBar = isWhite ? (p < threshold - 15) : (p > threshold + 15);
                     if(isBar && !inB) { inB=true; s=x; }
-                    else if(!isBar && inB) { inB=false; if(x-s>2) bars.push({s:s, e:x}); }
+                    else if(!isBar && inB) { inB=false; if(x-s>1) bars.push({s:s, e:x}); }
                 }
                 
                 if(bars.length >= 17) {
                     let bP = bars.slice(-17); 
                     let id = "";
-                    let midX = Math.floor((bP[8].s + bP[8].e) / 2); // Vạch mốc số 9
-                    let refH = getH(midX, y, isWhite); 
+                    let midX = Math.floor((bP[8].s + bP[8].e) / 2); 
+                    
+                    let refH = getH_robust(midX, isWhite, threshold); 
                     
                     if(refH > 5) {
                         let valid = true;
                         for(let i=0; i<17; i++) {
                             if (i === 0 || i === 8 || i === 16) continue;
                             let curX = Math.floor((bP[i].s + bP[i].e) / 2);
-                            let h = getH(curX, y, isWhite);
+                            let h = getH_robust(curX, isWhite, threshold);
                             
                             if (h <= 0) { valid = false; break; }
 
                             let val = Math.round((h / refH) * 11) - 1;
                             id += Math.max(0, Math.min(9, val));
                         }
-                        if(valid && id.length === 14) {
-                            foundId = id; 
-                            break; // Tìm thấy mã hợp lệ thì dừng quét các đường khác
-                        }
+                        if(valid && id.length === 14) { foundId = id; break; }
                     }
                 }
             }
 
             if (foundId) {
+                // RUNG ĐIỆN THOẠI KHI QUÉT TRÚNG
+                if (navigator.vibrate) navigator.vibrate(200);
                 checkDB(foundId, isStatic);
             } else if(isStatic) {
-                document.getElementById('linkContainer').innerHTML = "<span style='color: var(--error-color); font-weight: bold;'>Không tìm thấy mã Soundcode hợp lệ trong ảnh!</span>";
+                document.getElementById('linkContainer').innerHTML = "<span style='color: var(--error-color); font-weight: bold;'>Ảnh quá mờ hoặc lóa sáng. Vui lòng thử lại!</span>";
             }
-        } catch (err) {
-            console.error("Lỗi quét:", err);
-        }
+        } catch (err) { console.error("Lỗi quét:", err); }
     }
 
-    function getH(x, startY, isW) {
-        x = Math.floor(x); startY = Math.floor(startY);
-        const img = scanCtx.getImageData(x, 0, 1, scanCanvas.height).data;
-        let h = 0;
-        for(let y=startY; y>=0; y--) { 
-            let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3; 
-            if(isW ? p<100 : p>150) h++; else break; 
-        }
-        for(let y=startY+1; y<scanCanvas.height; y++) { 
-            let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3; 
-            if(isW ? p<100 : p>150) h++; else break; 
-        }
-        return h;
+    // --- COPY NỘI DUNG ---
+    window.copyToClipboard = function(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Đã sao chép nội dung!");
+        }).catch(() => {
+            alert("Trình duyệt không hỗ trợ sao chép tự động.");
+        });
     }
 
-    // ==========================================
-    // 6. KIỂM TRA DB & ĐIỀU KHOẢN
-    // ==========================================
     let isChecking = false; 
     async function checkDB(id, isStatic) {
-        if(isChecking) return;
-        isChecking = true;
+        if(isChecking) return; isChecking = true;
         try {
             const snap = await db.ref('soundCodes/'+id).once('value');
             if(snap.exists()) {
-                stopCamera();
+                stopCamera(); 
                 document.getElementById("decodeResult").style.display = "block";
-                document.getElementById('linkContainer').innerHTML = `
-                    <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Nhận diện thành công</p>
-                    <a href="${snap.val().url}" target="_blank" class="result-link">Mở Facebook</a>
-                `;
+                
+                let resultData = snap.val().url;
+                let isLink = resultData.startsWith('http://') || resultData.startsWith('https://');
+                
+                let resultHTML = `<p style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Nhận diện thành công</p>`;
+                if (isLink) {
+                    resultHTML += `<a href="${resultData}" target="_blank" class="result-link">MỞ LIÊN KẾT</a>`;
+                } else {
+                    resultHTML += `<div class="result-text">${resultData}</div>`;
+                }
+                
+                resultHTML += `<br><button class="copy-btn" onclick="copyToClipboard('${resultData}')">COPY NỘI DUNG</button>`;
+                
+                document.getElementById('linkContainer').innerHTML = resultHTML;
+                
             } else {
                 document.getElementById("decodeResult").style.display = "block";
-                if(isStatic) {
-                    document.getElementById('linkContainer').innerHTML = "<span style='color: var(--error-color); font-weight: bold;'>Mã Soundcode không tồn tại!</span>";
-                } else {
-                    stopCamera(); 
-                    document.getElementById('linkContainer').innerHTML = `
-                        <span style='color: var(--error-color); font-weight: bold;'>Mã không có trong hệ thống!</span><br>
-                        <button class='btn-primary' onclick='startCamera()' style='margin-top: 15px; padding: 10px 20px; font-size: 12px;'>Quét Lại</button>
-                    `;
-                }
+                stopCamera(); 
+                document.getElementById('linkContainer').innerHTML = `
+                    <span style='color: var(--error-color); font-weight: bold;'>Mã không tồn tại (ID: ${id})</span><br>
+                    <span style='font-size: 11px; color: var(--text-muted);'>Hãy đảm bảo bạn đang quét ảnh mới tạo!</span><br>
+                    <button class='btn-primary' onclick='startCamera()' style='margin-top: 15px; padding: 10px 20px; font-size: 12px;'>Quét Lại</button>
+                `;
             }
-        } catch (e) { console.error("Lỗi tra cứu:", e); }
+        } catch (e) { }
         isChecking = false;
     }
 
-    const CURRENT_TERMS_VERSION = "3";
-    window.addEventListener('load', () => {
-        const savedVersion = localStorage.getItem('soundcode_terms_version');
-        if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
-            document.getElementById('termsOverlay').style.display = 'flex';
-        }
-    });
-
-    function dongYDieuKhoan() {
-        localStorage.setItem('soundcode_terms_version', CURRENT_TERMS_VERSION);
-        document.getElementById('termsOverlay').style.display = 'none';
-    }
-
-    function tuChoi() {
-        alert("Bạn cần đồng ý với điều khoản mới nhất để tiếp tục sử dụng.");
-        window.location.href = "about:blank";
-    }
+    window.addEventListener('load', () => { if (localStorage.getItem('soundcode_terms_version') !== "3") document.getElementById('termsOverlay').style.display = 'flex'; });
+    function dongYDieuKhoan() { localStorage.setItem('soundcode_terms_version', "3"); document.getElementById('termsOverlay').style.display = 'none'; }
+    function tuChoi() { alert("Bạn cần đồng ý!"); window.location.href = "about:blank"; }
 </script>
 </body>
 </html>
-
