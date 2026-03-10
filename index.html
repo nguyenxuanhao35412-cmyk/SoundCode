@@ -102,6 +102,22 @@
         
         .result-box { margin-top: 20px; background: var(--bg-input); padding: 15px; border-radius: 12px; border: 2px solid var(--btn-bg); display: none; }
         .result-link { color: var(--btn-bg); font-weight: 800; font-size: 18px; display: block; margin-top: 10px; text-decoration: none; text-transform: uppercase; }
+  /* --- Tối ưu khung quét cho thư viện mới --- */
+#scannerContainer video {
+    width: 100% !important;
+    height: auto !important;
+    border-radius: 20px;
+    object-fit: cover; /* Giúp camera lấp đầy khung hình */
+}
+
+/* Ẩn cái dòng chữ rác của thư viện để app nhìn chuyên nghiệp hơn */
+#scannerContainer img[alt="Camera menu icon"] {
+    display: none !important;
+}
+
+#scannerContainer span {
+    display: none !important;
+}
     </style>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
