@@ -61,12 +61,6 @@
             font-family: inherit;
         }
 
-        .file-upload-label { 
-            background: var(--bg-input); color: var(--text-muted); padding: 12px; border-radius: 10px; 
-            font-size: 11px; cursor: pointer; display: inline-block; margin-bottom: 15px; 
-            border: 1px dashed var(--border-color); width: 85%; text-transform: uppercase; font-weight: 700; 
-        }
-
         #encodeCanvas { background: var(--bg-main); margin-top: 20px; border-radius: 12px; max-width: 100%; display: none; }
         .drop-zone { width: 85%; margin: 10px auto; padding: 40px 10px; border: 2px dashed var(--btn-bg); border-radius: 15px; background: rgba(255, 149, 0, 0.05); color: var(--text-title); font-weight: 700; cursor: pointer; font-size: 12px; text-transform: uppercase; }
 
@@ -94,9 +88,8 @@
 
     <div class="section">
         <h2>1. Tạo mã Soundcode</h2>
-        <label for="logoInput" class="file-upload-label">Chọn Logo (Tùy chọn)</label>
-        <input type="file" id="logoInput" accept="image/*" style="display: none;">
-        <input type="text" id="linkInput" placeholder="Dán link Facebook của bạn...">
+        <input type="text" id="linkInput" placeholder="Dán link Facebook vào đây...">
+        <br>
         <button class="btn-primary" onclick="generateSoundcode()">Mã hóa và Lưu</button>
         <button class="btn-primary" onclick="downloadCode()" id="dlBtn" style="display:none; background: #333; color: #fff;">Tải ảnh</button>
         <canvas id="encodeCanvas" width="550" height="150"></canvas>
@@ -147,29 +140,12 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let userCustomLogo = null; window.currentSecretId = null; 
+    window.currentSecretId = null; 
 
-    document.getElementById('logoInput').addEventListener('change', function(e) {
-        const file = e.target.files[0]; if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            userCustomLogo = new Image();
-            userCustomLogo.onload = () => alert("Đã nhận Logo!");
-            userCustomLogo.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
-
-    // --- SỬA LỖI NHẬN LINK FACEBOOK ---
     async function generateSoundcode() {
         const url = document.getElementById("linkInput").value.trim();
-        // Kiểm tra linh hoạt hơn: Chỉ cần có facebook.com hoặc fb.com hoặc fb.watch...
         const fbRegex = /(facebook\.com|fb\.com|fb\.watch)/;
-        if (!url || !fbRegex.test(url.toLowerCase())) { 
-            alert("Link Facebook không hợp lệ! Vui lòng copy đúng link từ trình duyệt hoặc app."); 
-            return; 
-        }
-        
+        if (!url || !fbRegex.test(url.toLowerCase())) { alert("Link Facebook không hợp lệ!"); return; }
         try {
             const snap = await db.ref('soundCodes').orderByChild('url').equalTo(url).once('value');
             let id = snap.exists() ? Object.keys(snap.val())[0] : null;
@@ -178,26 +154,52 @@
                 await db.ref('soundCodes/' + id).set({ url, createdAt: new Date().toISOString() });
             }
             window.currentSecretId = id; drawBarcodeGraphics(id);
-        } catch (e) { alert("Lỗi hệ thống! Vui lòng thử lại."); }
+        } catch (e) { alert("Lỗi kết nối!"); }
+    }
+
+    // --- HÀM VẼ LOGO MẶC ĐỊNH (ĐÃ NÂNG CẤP KÍCH THƯỚC) ---
+    function drawBrandLogo(ctx, x, y, radius, color) {
+        // Vẽ vòng tròn nền logo
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+
+        // Vẽ biểu tượng sóng âm màu cam (To hơn)
+        ctx.fillStyle = "#FF9500";
+        // Tăng chiều rộng vạch sóng và chiều cao tối đa
+        const barW = 5; 
+        const bars = [18, 32, 24, 38, 20]; // Chiều cao các vạch sóng (Tăng đáng kể)
+        
+        // Mở rộng khoảng cách giữa các vạch để chiếm nhiều không gian hơn
+        const gap = 9;
+        const totalW = (barW * bars.length) + (gap * (bars.length - 1));
+        let startX = x - totalW / 2;
+        
+        bars.forEach(h => {
+            ctx.beginPath();
+            // Tăng bán kính bo góc để phù hợp với độ dày mới
+            ctx.roundRect(startX, y - h/2, barW, h, 3);
+            ctx.fill();
+            startX += barW + gap;
+        });
     }
 
     function drawBarcodeGraphics(id) {
         const canvas = document.getElementById("encodeCanvas"); const ctx = canvas.getContext("2d");
         const isLight = document.body.classList.contains('light-mode');
         const bgColor = isLight ? "#ffffff" : "#000000"; const fgColor = isLight ? "#000000" : "#ffffff";
+        
         ctx.fillStyle = bgColor; ctx.fillRect(0, 0, canvas.width, canvas.height);
         const cy = canvas.height/2; const logoX = 65; const logoRadius = 40;
-        ctx.save(); ctx.beginPath(); ctx.arc(logoX, cy, logoRadius, 0, Math.PI * 2);
-        if (userCustomLogo) {
-            ctx.clip(); const aspect = userCustomLogo.width / userCustomLogo.height;
-            let dW, dH; if (aspect > 1) { dH = logoRadius * 2; dW = dH * aspect; } else { dW = logoRadius * 2; dH = dW / aspect; }
-            ctx.drawImage(userCustomLogo, logoX - dW/2, cy - dH/2, dW, dH);
-        } else { ctx.fillStyle = fgColor; ctx.fill(); }
-        ctx.restore();
-        ctx.fillStyle = fgColor; let x = 145;
+
+        // Vẽ Logo Thương Hiệu mặc định
+        drawBrandLogo(ctx, logoX, cy, logoRadius, fgColor);
+
+        ctx.fillStyle = fgColor; let startX = 145;
         for (let i = -1; i <= 15; i++) {
             let hR = (i === -1 || i === 15) ? 1.0 : (parseInt(id[i]) + 1) / 10;
-            let h = 55 * hR; ctx.beginPath(); ctx.roundRect(x, cy - h, 8, h * 2, 4); ctx.fill(); x += 22;
+            let h = 55 * hR; ctx.beginPath(); ctx.roundRect(startX, cy - h, 8, h * 2, 4); ctx.fill(); startX += 22;
         }
         canvas.style.display = "inline-block"; document.getElementById("dlBtn").style.display = "inline-block";
     }
