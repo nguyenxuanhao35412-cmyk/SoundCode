@@ -36,14 +36,40 @@
 
         .container { max-width: 600px; margin: 20px auto; background: var(--bg-container); padding: 25px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); position: relative; }
 
-        .app-header { position: relative; display: flex; align-items: center; justify-content: center; padding: 10px 0 30px 0; min-height: 50px; }
-        h1 { margin: 0; color: var(--text-title); letter-spacing: 4px; text-transform: uppercase; font-size: 22px; font-weight: 800; width: 100%; }
-        
-        .theme-btn {
-            position: absolute; right: 0; background: var(--bg-section); color: var(--text-title);
-            border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 12px;
-            font-size: 10px; cursor: pointer; font-weight: 700; text-transform: uppercase; z-index: 10;
+        /* HEADER XẾP DỌC - CĂN GIỮA (Không bao giờ đè chữ) */
+        .app-header { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;    
+            justify-content: center; 
+            padding: 10px 0 25px 0; 
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
         }
+        h1 { 
+            margin: 0 0 15px 0; 
+            color: var(--text-title); 
+            letter-spacing: 4px; 
+            text-transform: uppercase; 
+            font-size: 26px; 
+            font-weight: 800; 
+            text-align: center;
+        }
+        .theme-btn {
+            position: relative; 
+            background: var(--bg-section); 
+            color: var(--text-title);
+            border: 1px solid var(--border-color); 
+            padding: 8px 18px; 
+            border-radius: 20px;
+            font-size: 11px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            transition: 0.3s;
+            white-space: nowrap; 
+        }
+        .theme-btn:hover { border-color: var(--btn-bg); color: var(--btn-bg); }
 
         .section { margin-bottom: 30px; padding: 20px; background: var(--bg-section); border-radius: 18px; border: 1px solid var(--border-color); }
         h2 { font-size: 12px; margin-top: 0; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 20px; font-weight: 600; }
@@ -69,19 +95,8 @@
         .close-btn { position: absolute; top: 40px; right: 20px; background: rgba(0,0,0,0.8); color: #fff; border: 1px solid #fff; padding: 8px 20px; border-radius: 8px; font-weight: 800; font-size: 11px; z-index: 10000; text-transform: uppercase; }
         
         .scan-frame { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 400px; height: 150px; border: 2px solid var(--btn-bg); border-radius: 16px; z-index: 9999; box-shadow: 0 0 0 10000px rgba(0,0,0,0.75); }
-        
-        /* CẬP NHẬT THANH LASER CHẠY LÊN XUỐNG */
-        .laser { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 2px; 
-            background: var(--laser-color); 
-            box-shadow: 0 0 15px 3px var(--laser-color); 
-            animation: scanline 2.5s infinite ease-in-out; /* Dòng này đã được kích hoạt lại */
-        }
-        @keyframes scanline { 
-            0%, 100% { transform: translateY(0); opacity: 0; } 
-            10%, 90% { opacity: 1; } 
-            50% { transform: translateY(148px); } 
-        }
+        .laser { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--laser-color); box-shadow: 0 0 15px 3px var(--laser-color); animation: scanline 2.5s infinite ease-in-out; }
+        @keyframes scanline { 0%, 100% { transform: translateY(0); opacity: 0; } 10%, 90% { opacity: 1; } 50% { transform: translateY(148px); } }
         
         .result-box { margin-top: 20px; background: var(--bg-input); padding: 15px; border-radius: 12px; border: 2px solid var(--btn-bg); display: none; }
         .result-link { color: var(--btn-bg); font-weight: 800; font-size: 18px; display: block; margin-top: 10px; text-decoration: none; text-transform: uppercase; }
@@ -169,6 +184,7 @@
         } catch (e) { alert("Lỗi kết nối!"); }
     }
 
+    // --- HÀM VẼ LOGO 6 VẠCH CHÂN ÁI (BẢN V2.7 - CÓ SAFE ZONE) ---
     function drawBrandLogo(ctx, x, y, radius, color) {
         ctx.beginPath();
         ctx.arc(x, y, radius, 0, Math.PI * 2);
@@ -178,6 +194,8 @@
         ctx.fillStyle = "#FF9500";
         const barW = 5.2; 
         const gap = 6.8; 
+        
+        // CẤU TRÚC 6 VẠCH CÂN ĐỐI, KHÔNG CHẠM VIỀN SẾP ƯNG NHẤT
         const bars = [14, 42, 22, 48, 30, 16]; 
         
         const totalW = (barW * bars.length) + (gap * (bars.length - 1));
