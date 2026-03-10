@@ -128,8 +128,7 @@ Chào mừng sếp đến với SoundCode!
 
 - Sếp cam kết không tạo mã cho link lừa đảo.
 
--
-Bấm "Đồng ý" để bắt đầu trải nghiệm nhé!
+- Bấm "Đồng ý" để bắt đầu trải nghiệm nhé!
 </div>
 <div style="display: flex; gap: 10px; margin-top: 20px;">
 <button onclick="tuChoi()" style="background:#333; color:#fff; border:1px solid #444; padding:12px; flex:1; border-radius:12px; font-weight:600; cursor:pointer;">TỪ CHỐI</button>
@@ -372,14 +371,35 @@ Bấm "Đồng ý" để bắt đầu trải nghiệm nhé!
         isChecking = false;
     }
 
+// 1. Sếp đặt số phiên bản điều khoản hiện tại ở đây
+// Mỗi lần sếp cập nhật nội dung điều khoản mới, sếp chỉ cần tăng số này lên (ví dụ từ 1 lên 2)
+const CURRENT_TERMS_VERSION = "1";
 
 window.addEventListener('load', () => {
-    // Sếp tạm thời xóa hết đống if else, chỉ để đúng 1 dòng này:
+// 2. Lấy phiên bản mà người dùng đã từng đồng ý trong máy họ ra
+const savedVersion = localStorage.getItem('soundcode_terms_version');
+
+// 3. So sánh: Nếu chưa có phiên bản nào HOẶC phiên bản cũ thấp hơn bản hiện tại
+if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
+    // Hiện bảng điều khoản lên bắt ký lại
     document.getElementById('termsOverlay').style.display = 'flex';
+}
 });
+
+function dongYDieuKhoan() {
+// 4. Khi bấm đồng ý, lưu đúng cái số phiên bản hiện tại vào máy họ
+localStorage.setItem('soundcode_terms_version', CURRENT_TERMS_VERSION);
+document.getElementById('termsOverlay').style.display = 'none';
+}
+
+function tuChoi() {
+alert("Sếp cần đồng ý với điều khoản mới nhất để tiếp tục sử dụng.");
+window.location.href = "about:blank";
+}
 </script>
 </body>
 </html>
+
 
 
 
