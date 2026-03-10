@@ -190,7 +190,6 @@
         a.href = document.getElementById("encodeCanvas").toDataURL(); a.click();
     }
 
-    // --- SCANNER LOGIC ---
     const dropZone = document.getElementById('dropZone'); const fileInput = document.getElementById('fileInput');
     const scanCanvas = document.getElementById('hiddenScanCanvas'); const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
     
@@ -225,7 +224,11 @@
             isScanning = true; requestAnimationFrame(scanLoop);
         } catch (e) { alert("Lỗi Cam!"); }
     }
-    function stopCamera() { isScanning = false; if(video.srcObject) video.srcObject.getTracks().forEach(t => t.stop()); document.getElementById('scannerContainer').style.display = "none"; }
+    function stopCamera() { 
+        isScanning = false; 
+        if(video.srcObject) video.srcObject.getTracks().forEach(t => t.stop()); 
+        document.getElementById('scannerContainer').style.display = "none"; 
+    }
     
     function scanLoop() {
         if(!isScanning) return;
@@ -233,14 +236,13 @@
             scanCanvas.width = video.videoWidth; scanCanvas.height = video.videoHeight;
             scanCtx.drawImage(video, 0, 0); attemptDecode(false);
         }
-        setTimeout(() => requestAnimationFrame(scanLoop), 100);
+        if(isScanning) setTimeout(() => requestAnimationFrame(scanLoop), 100);
     }
 
-    // --- THUẬT TOÁN QUÉT ĐA ĐIỂM ---
     function attemptDecode(isStatic) {
+        if(window.isChecking && !isStatic) return;
         try {
             let foundId = null;
-            // Quét 5 vùng ngang để tránh bị lệch
             const lines = [0.5, 0.45, 0.55, 0.4, 0.6];
             for (let r of lines) {
                 let y = Math.floor(scanCanvas.height * r);
@@ -278,6 +280,7 @@
                 }
             }
             if(foundId) {
+                window.isChecking = true;
                 if(navigator.vibrate) navigator.vibrate(150);
                 checkDB(foundId, isStatic);
             }
@@ -297,11 +300,11 @@
     }
 
     async function checkDB(id, isStatic) {
-        if(window.isChecking) return; window.isChecking = true;
         try {
             const snap = await db.ref('soundCodes/'+id).once('value');
             if(snap.exists()) {
-                stopCamera(); document.getElementById('decodeResult').style.display = "block";
+                stopCamera();
+                document.getElementById('decodeResult').style.display = "block";
                 let res = snap.val().url;
                 let isLink = res.startsWith('http');
                 let html = `<p style="font-size:10px;color:var(--text-muted)">THÀNH CÔNG</p>`;
@@ -315,10 +318,10 @@
         window.isChecking = false;
     }
 
-    window.copyToClipboard = (t) => { navigator.clipboard.writeText(t); alert("Đã chép!"); };
     window.onload = () => { if(localStorage.getItem('soundcode_terms_version') !== "3") document.getElementById('termsOverlay').style.display='flex'; };
     function dongYDieuKhoan() { localStorage.setItem('soundcode_terms_version', "3"); document.getElementById('termsOverlay').style.display='none'; }
     function tuChoi() { alert("Phải đồng ý mới dùng được sếp!"); window.location.href="about:blank"; }
 </script>
 </body>
 </html>
+
