@@ -405,9 +405,10 @@
         isChecking = false;
     }
 
-    window.addEventListener('load', () => { if (localStorage.getItem('soundcode_terms_version') !== "3") document.getElementById('termsOverlay').style.display = 'flex'; });
+    window.addEventListener('load', () => { if (localStorage.getItem('soundcode_terms_version') !== "4") document.getElementById('termsOverlay').style.display = 'flex'; });
     function dongYDieuKhoan() { localStorage.setItem('soundcode_terms_version', "3"); document.getElementById('termsOverlay').style.display = 'none'; }
     function tuChoi() { alert("Bạn cần đồng ý!"); window.location.href = "about:blank"; }
 </script>
 </body>
 </html>
+
