@@ -85,6 +85,8 @@
         
         .result-box { margin-top: 20px; background: var(--bg-input); padding: 15px; border-radius: 12px; border: 2px solid var(--btn-bg); display: none; }
         .result-link { color: var(--btn-bg); font-weight: 800; font-size: 18px; display: block; margin-top: 10px; text-decoration: none; text-transform: uppercase; word-break: break-all; }
+        /* Style gạch chân cho link */
+        .is-url { text-decoration: underline !important; }
     </style>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
@@ -183,7 +185,7 @@
 
     window.currentSecretId = null; 
     let isProcessingResult = false; 
-    let activeParticles = []; // Lưu trữ các hạt đang hiển thị sau khi quét được mã
+    let activeParticles = []; 
 
     // ==========================================
     // 2. TẠO MÃ & VẼ ĐỒ HỌA
@@ -191,7 +193,6 @@
     async function generateSoundcode() {
         const url = document.getElementById("linkInput").value.trim();
         if (!url) { alert("Vui lòng nhập nội dung!"); return; }
-        
         try {
             const snap = await db.ref('soundCodes').orderByChild('url').equalTo(url).once('value');
             let id = snap.exists() ? Object.keys(snap.val())[0] : null;
@@ -331,7 +332,7 @@
                 trackingOverlay.width = video.videoWidth; trackingOverlay.height = video.videoHeight;
                 const trackingCtx = trackingOverlay.getContext('2d');
                 trackingCtx.clearRect(0, 0, trackingOverlay.width, trackingOverlay.height);
-                // CHỈ VẼ KHI ĐÃ QUÉT TRÚNG MÃ
+                // Hiệu ứng ẩn hiện chu kỳ hỗn loạn
                 if(activeParticles.length > 0) drawTrackingDots(activeParticles);
             }
             attemptDecode(false);
@@ -342,11 +343,17 @@
     function generateFillDots(corners) {
         if (!corners || corners.length < 2) return [];
         let dots = [];
-        const numDots = 40; // Giảm mật độ hạt để thưa hơn
+        const numDots = 35; 
         let minX = Math.min(...corners.map(p => p.x)); let maxX = Math.max(...corners.map(p => p.x));
         let minY = Math.min(...corners.map(p => p.y)); let maxY = Math.max(...corners.map(p => p.y));
         for (let i = 0; i < numDots; i++) {
-            dots.push({ x: minX + Math.random() * (maxX - minX), y: minY + Math.random() * (maxY - minY) });
+            dots.push({ 
+                x: minX + Math.random() * (maxX - minX), 
+                y: minY + Math.random() * (maxY - minY),
+                size: 3 + Math.random() * 3, // Hạt to hơn
+                phase: Math.random() * Math.PI * 2, // Chu kỳ bắt đầu ngẫu nhiên
+                speed: 0.1 + Math.random() * 0.2 // Tốc độ ẩn hiện khác nhau
+            });
         }
         return dots;
     }
@@ -355,17 +362,21 @@
         if (!points || points.length === 0) return;
         const trackingOverlay = document.getElementById('trackingOverlay');
         const ctx = trackingOverlay.getContext('2d');
+        const time = Date.now() * 0.005;
+
         points.forEach(p => {
-            // Hạt to hơn (3px - 6px) và nhấp nháy không đồng nhất
-            let r = 3 + Math.random() * 3; 
-            let alpha = 0.3 + Math.random() * 0.7; 
+            // Hàm Sin tạo hiệu ứng ẩn hiện theo chu kỳ mượt mà
+            let alpha = (Math.sin(time * p.speed + p.phase) + 1) / 2;
+            alpha = 0.1 + alpha * 0.9; // Đảm bảo không mất hẳn
+
             ctx.beginPath();
-            ctx.arc(p.x, p.y, r, 0, 2 * Math.PI);
+            ctx.arc(p.x, p.y, p.size, 0, 2 * Math.PI);
             ctx.fillStyle = `rgba(255, 149, 0, ${alpha})`;
             ctx.shadowBlur = 15; ctx.shadowColor = '#FF9500';
             ctx.fill();
+
             ctx.beginPath();
-            ctx.arc(p.x, p.y, r * 0.4, 0, 2 * Math.PI);
+            ctx.arc(p.x, p.y, p.size * 0.4, 0, 2 * Math.PI);
             ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
             ctx.shadowBlur = 0; ctx.fill();
         });
@@ -375,7 +386,6 @@
     // 5. THUẬT TOÁN QUÉT TỔNG HỢP & AR TRACKING
     // ==========================================
     function attemptDecode(isStatic) {
-        // Nếu đã quét trúng mã rồi thì không quét lại nữa, để hiệu ứng chạy
         if (isProcessingResult && !isStatic) return;
 
         try {
@@ -417,12 +427,14 @@
                             for(let j=0; j<17; j++) {
                                 let ch = getH(Math.floor((bP[j].s + bP[j].e) / 2), y, isWhite);
                                 if(ch > 0) {
-                                    // Mật độ hạt thưa hơn
-                                    let numDots = Math.max(2, Math.floor(ch * 0.5)); 
+                                    let numDots = 2; // Rải thưa
                                     for(let k=0; k<numDots; k++) {
                                         soundcodePoints.push({
                                             x: bP[j].s + Math.random() * (bP[j].e - bP[j].s), 
-                                            y: y - ch + Math.random() * (ch * 2)
+                                            y: y - ch + Math.random() * (ch * 2),
+                                            size: 3 + Math.random() * 3,
+                                            phase: Math.random() * Math.PI * 2,
+                                            speed: 0.1 + Math.random() * 0.2
                                         }); 
                                     }
                                 }
@@ -435,20 +447,20 @@
 
             if (foundId) {
                 isProcessingResult = true;
-                if(!isStatic) activeParticles = soundcodePoints; // Kích hoạt hạt sau khi tìm thấy mã
+                if(!isStatic) activeParticles = soundcodePoints; 
                 setTimeout(() => checkDB(foundId, isStatic), isStatic ? 0 : 1500); 
             } else {
                 tryStandardDecode(isStatic).then(resultObj => {
                     if (resultObj && resultObj.text && !resultObj.text.includes("sound-code-ten.vercel.app")) {
                         isProcessingResult = true;
-                        if(!isStatic) activeParticles = generateFillDots(resultObj.points); // Kích hoạt hạt
+                        if(!isStatic) activeParticles = generateFillDots(resultObj.points); 
                         setTimeout(() => {
                             stopCamera();
                             document.getElementById("decodeResult").style.display = "block";
                             const isUrl = /^(http|https):\/\/[^ "]+$/.test(resultObj.text);
                             document.getElementById('linkContainer').innerHTML = `
                                 <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Nhận diện thành công</p>
-                                ${isUrl ? `<a href="${resultObj.text}" target="_blank" class="result-link">${resultObj.text}</a>` : `<div class="result-link">${resultObj.text}</div>`}
+                                ${isUrl ? `<a href="${resultObj.text}" target="_blank" class="result-link is-url">${resultObj.text}</a>` : `<div class="result-link">${resultObj.text}</div>`}
                             `;
                         }, isStatic ? 0 : 1500); 
                     } else if(isStatic && !resultObj) {
@@ -466,17 +478,13 @@
         if (isStandardScanning && !isStatic) return null; 
         isStandardScanning = true;
         let finalResult = null;
-        
         if ('BarcodeDetector' in window) {
             try {
                 const detector = new BarcodeDetector({ formats: ['code_128', 'qr_code', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_39'] });
                 const barcodes = await detector.detect(scanCanvas);
-                if (barcodes.length > 0) {
-                    finalResult = { text: barcodes[0].rawValue, points: barcodes[0].cornerPoints };
-                }
+                if (barcodes.length > 0) finalResult = { text: barcodes[0].rawValue, points: barcodes[0].cornerPoints };
             } catch (e) { }
         }
-
         if (!finalResult) {
             try {
                 if (!zxingReader && typeof ZXing !== 'undefined') zxingReader = new ZXing.BrowserMultiFormatReader();
@@ -526,15 +534,14 @@
                 const isUrl = /^(http|https):\/\/[^ "]+$/.test(resultUrl);
                 document.getElementById('linkContainer').innerHTML = `
                     <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Nhận diện thành công</p>
-                    ${isUrl ? `<a href="${resultUrl}" target="_blank" class="result-link">${resultUrl}</a>` : `<div class="result-link">${resultUrl}</div>`}
+                    ${isUrl ? `<a href="${resultUrl}" target="_blank" class="result-link is-url">${resultUrl}</a>` : `<div class="result-link">${resultUrl}</div>`}
                 `;
             } else {
                 if(isStatic) document.getElementById('linkContainer').innerHTML = "<span style='color: var(--error-color); font-weight: bold;'>Mã không tồn tại!</span>";
-                isProcessingResult = false; activeParticles = []; // Reset để cho phép quét lại nếu mã ko tồn tại
+                isProcessingResult = false; activeParticles = [];
             }
         } catch (e) { console.error("Lỗi tra cứu:", e); }
         isChecking = false;
-        // isProcessingResult = false; // Chỉ mở khóa khi đóng cam hoặc lỗi
     }
 
     // ==========================================
@@ -544,23 +551,18 @@
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('s') === '1') startCamera();
     }
-
-    const CURRENT_TERMS_VERSION = "31";
+    const CURRENT_TERMS_VERSION = "32";
     window.addEventListener('load', () => {
         const savedVersion = localStorage.getItem('soundcode_terms_version');
         if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
             document.getElementById('termsOverlay').style.display = 'flex';
-        } else {
-            checkAutoScan();
-        }
+        } else { checkAutoScan(); }
     });
-
     function dongYDieuKhoan() {
         localStorage.setItem('soundcode_terms_version', CURRENT_TERMS_VERSION);
         document.getElementById('termsOverlay').style.display = 'none';
         checkAutoScan();
     }
-
     function tuChoi() { alert("Bạn cần đồng ý để tiếp tục."); window.location.href = "about:blank"; }
 </script>
 </body>
