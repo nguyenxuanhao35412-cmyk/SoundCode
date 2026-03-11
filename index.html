@@ -349,53 +349,43 @@
         setTimeout(() => requestAnimationFrame(scanLoop), 80); 
     }
 
-    function generatePerimeterDots(corners) {
+    // THAY ĐỔI: Hàm sinh đốm sáng phủ đầy (fill) hình dạng của Mã vạch/QR tiêu chuẩn
+    function generateFillDots(corners) {
         if (!corners || corners.length < 2) return corners;
         let dots = [];
-        const numDots = 12; 
+        const numDots = 150; // Phủ đặc 150 hạt sáng
         
-        if (corners.length === 2) {
-            for (let j = 0; j <= numDots * 2; j++) {
-                dots.push({
-                    x: corners[0].x + (corners[1].x - corners[0].x) * (j / (numDots * 2)),
-                    y: corners[0].y + (corners[1].y - corners[0].y) * (j / (numDots * 2))
-                });
-            }
-        } else {
-            for (let i = 0; i < corners.length; i++) {
-                let p1 = corners[i];
-                let p2 = corners[(i + 1) % corners.length];
-                for (let j = 0; j < numDots; j++) {
-                    dots.push({
-                        x: p1.x + (p2.x - p1.x) * (j / numDots),
-                        y: p1.y + (p2.y - p1.y) * (j / numDots)
-                    });
-                }
-            }
+        let minX = Math.min(...corners.map(p => p.x));
+        let maxX = Math.max(...corners.map(p => p.x));
+        let minY = Math.min(...corners.map(p => p.y));
+        let maxY = Math.max(...corners.map(p => p.y));
+
+        for (let i = 0; i < numDots; i++) {
+            dots.push({
+                x: minX + Math.random() * (maxX - minX),
+                y: minY + Math.random() * (maxY - minY)
+            });
         }
         return dots;
     }
 
+    // THAY ĐỔI: Hiệu ứng hạt li ti nhấp nháy không đồng nhất
     function drawTrackingDots(points) {
         if (!points || points.length === 0) return;
         const trackingOverlay = document.getElementById('trackingOverlay');
         const ctx = trackingOverlay.getContext('2d');
         
         points.forEach(p => {
-            let r = 2.5 + Math.random() * 3.5; 
-            let alpha = 0.5 + Math.random() * 0.5;
+            // Vòng tròn nhỏ li ti (bán kính ngẫu nhiên từ 1 đến 3.5)
+            let r = 1 + Math.random() * 2.5; 
+            // Nhấp nháy không đồng nhất (độ mờ ngẫu nhiên từ 0.2 đến 1.0)
+            let alpha = 0.2 + Math.random() * 0.8; 
             
             ctx.beginPath();
             ctx.arc(p.x, p.y, r, 0, 2 * Math.PI);
             ctx.fillStyle = `rgba(255, 149, 0, ${alpha})`;
-            ctx.shadowBlur = 12;
+            ctx.shadowBlur = 8; // Bóng toả sáng nhẹ
             ctx.shadowColor = '#FF9500';
-            ctx.fill();
-
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, r * 0.4, 0, 2 * Math.PI);
-            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-            ctx.shadowBlur = 0; 
             ctx.fill();
         });
     }
@@ -443,13 +433,19 @@
                         if(valid && id.length === 14) { 
                             foundId = id; 
                             
+                            // THAY ĐỔI: Fill đốm sáng dày đặc lọt thỏm vào bên trong từng vạch sóng âm
                             soundcodePoints = [];
                             for(let j=0; j<17; j++) {
-                                let cx = Math.floor((bP[j].s + bP[j].e) / 2);
-                                let ch = getH(cx, y, isWhite);
+                                let ch = getH(Math.floor((bP[j].s + bP[j].e) / 2), y, isWhite);
                                 if(ch > 0) {
-                                    soundcodePoints.push({x: cx, y: y - ch - 3}); 
-                                    soundcodePoints.push({x: cx, y: y + ch + 3}); 
+                                    // Mật độ hạt tuỳ thuộc vào chiều cao vạch (vạch càng cao, càng nhiều hạt)
+                                    let numDots = Math.max(5, Math.floor(ch * 1.5)); 
+                                    for(let k=0; k<numDots; k++) {
+                                        soundcodePoints.push({
+                                            x: bP[j].s + Math.random() * (bP[j].e - bP[j].s), 
+                                            y: y - ch + Math.random() * (ch * 2)
+                                        }); 
+                                    }
                                 }
                             }
                             break; 
@@ -462,23 +458,24 @@
                 if(!isStatic && soundcodePoints.length > 0) drawTrackingDots(soundcodePoints);
                 if(!isProcessingResult) {
                     isProcessingResult = true;
-                    setTimeout(() => checkDB(foundId, isStatic), isStatic ? 0 : 600); 
+                    // THAY ĐỔI: Thời gian chờ hiệu ứng 1.5 giây (1500ms)
+                    setTimeout(() => checkDB(foundId, isStatic), isStatic ? 0 : 1500); 
                 }
             } else {
                 tryStandardDecode(isStatic).then(result => {
                     if (result && !result.includes("sound-code-ten.vercel.app")) {
                         if(!isProcessingResult) {
                             isProcessingResult = true;
+                            // THAY ĐỔI: Thời gian chờ hiệu ứng 1.5 giây (1500ms)
                             setTimeout(() => {
                                 stopCamera();
                                 document.getElementById("decodeResult").style.display = "block";
                                 const isUrl = /^(http|https):\/\/[^ "]+$/.test(result);
-                                // THAY ĐỔI YÊU CẦU: HIỂN THỊ LINK THẬT ĐỂ NGƯỜI DÙNG QUYẾT ĐỊNH
                                 document.getElementById('linkContainer').innerHTML = `
                                     <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Nhận diện thành công</p>
                                     ${isUrl ? `<a href="${result}" target="_blank" class="result-link">${result}</a>` : `<div class="result-link">${result}</div>`}
                                 `;
-                            }, isStatic ? 0 : 600); 
+                            }, isStatic ? 0 : 1500); 
                         }
                     } else if(isStatic && !result) {
                         document.getElementById('linkContainer').innerHTML = "<span style='color: var(--error-color); font-weight: bold;'>Không tìm thấy mã hợp lệ!</span>";
@@ -502,7 +499,7 @@
                 const barcodes = await detector.detect(scanCanvas);
                 if (barcodes.length > 0) {
                     resultText = barcodes[0].rawValue;
-                    if(!isStatic) drawTrackingDots(generatePerimeterDots(barcodes[0].cornerPoints)); 
+                    if(!isStatic) drawTrackingDots(generateFillDots(barcodes[0].cornerPoints)); 
                 }
             } catch (e) { }
         }
@@ -525,7 +522,7 @@
                         resultText = result.text;
                         if(!isStatic && result.resultPoints) {
                             const pts = result.resultPoints.map(p => ({x: p.getX(), y: p.getY()}));
-                            drawTrackingDots(generatePerimeterDots(pts));
+                            drawTrackingDots(generateFillDots(pts));
                         }
                     }
                 }
@@ -568,7 +565,6 @@
                 const resultUrl = snap.val().url;
                 const isUrl = /^(http|https):\/\/[^ "]+$/.test(resultUrl);
 
-                // THAY ĐỔI YÊU CẦU: HIỂN THỊ LINK THẬT ĐỂ NGƯỜI DÙNG QUYẾT ĐỊNH
                 document.getElementById('linkContainer').innerHTML = `
                     <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Nhận diện thành công</p>
                     ${isUrl ? `<a href="${resultUrl}" target="_blank" class="result-link">${resultUrl}</a>` : `<div class="result-link">${resultUrl}</div>`}
@@ -593,7 +589,7 @@
         }
     }
 
-    const CURRENT_TERMS_VERSION = "27";
+    const CURRENT_TERMS_VERSION = "30";
     window.addEventListener('load', () => {
         const savedVersion = localStorage.getItem('soundcode_terms_version');
         if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
