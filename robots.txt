@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://sound-code-ten.vercel.app/sitemap.xml
