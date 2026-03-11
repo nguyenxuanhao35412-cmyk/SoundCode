@@ -80,10 +80,6 @@
         .scanner-container video { width: 100%; height: 100%; object-fit: cover; }
         .close-btn { position: absolute; top: 40px; right: 20px; background: rgba(0,0,0,0.8); color: #fff; border: 1px solid #fff; padding: 8px 20px; border-radius: 8px; font-weight: 800; font-size: 11px; z-index: 10000; text-transform: uppercase; cursor: pointer; }
         
-        .scan-frame { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 400px; height: 150px; border: 2px solid var(--btn-bg); border-radius: 16px; z-index: 9999; box-shadow: 0 0 0 10000px rgba(0,0,0,0.75); }
-        .laser { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--laser-color); box-shadow: 0 0 15px 3px var(--laser-color); animation: scanline 2.5s infinite ease-in-out; }
-        @keyframes scanline { 0%, 100% { transform: translateY(0); opacity: 0; } 10%, 90% { opacity: 1; } 50% { transform: translateY(148px); } }
-        
         .result-box { margin-top: 20px; background: var(--bg-input); padding: 15px; border-radius: 12px; border: 2px solid var(--btn-bg); display: none; }
         .result-link { color: var(--btn-bg); font-weight: 800; font-size: 18px; display: block; margin-top: 10px; text-decoration: none; text-transform: uppercase; word-break: break-all; }
     </style>
@@ -150,7 +146,6 @@
         <div class="scanner-container" id="scannerContainer">
             <button class="close-btn" onclick="stopCamera()">Đóng</button>
             <video id="videoFeed" autoplay playsinline></video>
-            <div class="scan-frame"><div class="laser"></div></div>
         </div>
         
         <canvas id="hiddenScanCanvas" style="display: none;"></canvas>
@@ -332,7 +327,7 @@
     }
     
     // ==========================================
-    // 5. THUẬT TOÁN QUÉT TỔNG HỢP (KẾT HỢP QR & MÃ VẠCH 128)
+    // 5. THUẬT TOÁN QUÉT TỔNG HỢP
     // ==========================================
     function attemptDecode(isStatic) {
         try {
@@ -403,7 +398,6 @@
         isStandardScanning = true;
         let resultText = null;
         
-        // Cập nhật: Khai báo explicitly các định dạng cho BarcodeDetector (đặc biệt là code_128)
         if ('BarcodeDetector' in window) {
             try {
                 const detector = new BarcodeDetector({ formats: ['code_128', 'qr_code', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_39'] });
@@ -412,7 +406,6 @@
             } catch (e) { }
         }
 
-        // Cập nhật: Khởi tạo an toàn ZXing fallback
         if (!resultText) {
             try {
                 if (!zxingReader && typeof ZXing !== 'undefined') {
@@ -482,7 +475,7 @@
         }
     }
 
-    const CURRENT_TERMS_VERSION = "23";
+    const CURRENT_TERMS_VERSION = "25";
     window.addEventListener('load', () => {
         const savedVersion = localStorage.getItem('soundcode_terms_version');
         if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
