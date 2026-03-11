@@ -206,9 +206,9 @@
     function drawBrandLogo(ctx, x, y, sizeHint, color) {
         const fullSize = sizeHint * 2; 
 
-        // Rút gọn link để hạ ma trận xuống mức tối giản nhất (25x25) thay vì (29x29)
+        // THAY ĐỔI: Thêm tham số ?s=1 vào link để nhận diện tự bật camera
         const qr = qrcode(0, 'L'); 
-        qr.addData('sound-code-ten.vercel.app'); 
+        qr.addData('sound-code-ten.vercel.app/?s=1'); 
         qr.make();
 
         const moduleCount = qr.getModuleCount(); 
@@ -382,7 +382,6 @@
                 checkDB(foundId, isStatic);
             } else {
                 tryStandardDecode(isStatic).then(result => {
-                    // Cài đặt bộ lọc: Bỏ qua nếu quét trúng cái QR trang trí của app
                     if (result && !result.includes("sound-code-ten.vercel.app")) {
                         stopCamera();
                         document.getElementById("decodeResult").style.display = "block";
@@ -400,7 +399,6 @@
         } catch (err) { console.error("Lỗi quét:", err); }
     }
 
-    // Hàm tích hợp đọc mã vạch và QR
     let isStandardScanning = false;
     const zxingReader = (typeof ZXing !== 'undefined') ? new ZXing.BrowserMultiFormatReader() : null;
 
@@ -409,7 +407,6 @@
         isStandardScanning = true;
         let resultText = null;
         
-        // Cách 1: Ưu tiên dùng BarcodeDetector nội tại (Hỗ trợ QR và Code 128 rất tốt)
         if ('BarcodeDetector' in window) {
             try {
                 const detector = new BarcodeDetector();
@@ -418,7 +415,6 @@
             } catch (e) { }
         }
 
-        // Cách 2: Kế hoạch B với thư viện ZXing nếu trình duyệt không hỗ trợ BarcodeDetector
         if (!resultText && zxingReader) {
             try {
                 const result = await zxingReader.decodeFromCanvas(scanCanvas);
@@ -473,17 +469,35 @@
         isChecking = false;
     }
 
-    const CURRENT_TERMS_VERSION = "20";
+    // ==========================================
+    // 7. KHỞI CHẠY & KIỂM TRA TỰ ĐỘNG BẬT CAMERA
+    // ==========================================
+    
+    // Hàm kiểm tra nếu người dùng quét QR có chứa tham số ?s=1
+    function checkAutoScan() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('s') === '1') {
+            startCamera();
+        }
+    }
+
+    const CURRENT_TERMS_VERSION = "22";
     window.addEventListener('load', () => {
         const savedVersion = localStorage.getItem('soundcode_terms_version');
         if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
             document.getElementById('termsOverlay').style.display = 'flex';
+        } else {
+            // Nếu đã đồng ý điều khoản từ trước, kiểm tra xem có cần bật camera không
+            checkAutoScan();
         }
     });
 
     function dongYDieuKhoan() {
         localStorage.setItem('soundcode_terms_version', CURRENT_TERMS_VERSION);
         document.getElementById('termsOverlay').style.display = 'none';
+        
+        // Kích hoạt camera ngay sau khi vừa bấm Đồng ý (nếu người dùng vào qua quét QR)
+        checkAutoScan();
     }
 
     function tuChoi() { alert("Bạn cần đồng ý để tiếp tục."); window.location.href = "about:blank"; }
