@@ -202,21 +202,32 @@
 
     function drawBrandLogo(ctx, x, y, sizeHint, color) {
         const fullSize = sizeHint * 2; 
-        const qr = qrcode(0, 'L'); 
-        qr.addData('sound-code-ten.vercel.app/?s=1'); 
+        const isLight = document.body.classList.contains('light-mode');
+        const bgColor = isLight ? "#ffffff" : "#000000";
+
+        // TẠO VÙNG YÊN TĨNH (Quiet Zone): Vẽ một hình vuông đệm bằng màu nền bao quanh mã
+        ctx.fillStyle = bgColor;
+        const padding = 6; 
+        ctx.fillRect(x - sizeHint - padding, y - sizeHint - padding, fullSize + padding * 2, fullSize + padding * 2);
+
+        // THAY ĐỔI: Thêm https:// đầy đủ để Zalo/iOS nhận diện được link
+        const qr = qrcode(0, 'M'); 
+        qr.addData('https://sound-code-ten.vercel.app/?s=1'); 
         qr.make();
+
         const moduleCount = qr.getModuleCount(); 
-        const qrDrawSize = fullSize * 0.95; 
+        const qrDrawSize = fullSize; 
         const moduleSizeFull = qrDrawSize / moduleCount; 
         const startX = x - qrDrawSize/2;
         const startY = y - qrDrawSize/2;
+
         ctx.fillStyle = color;
         for (let row = 0; row < moduleCount; row++) {
             for (let col = 0; col < moduleCount; col++) {
                 if (qr.isDark(row, col)) {
                     const modX = startX + col * moduleSizeFull;
                     const modY = startY + row * moduleSizeFull;
-                    ctx.fillRect(modX, modY, moduleSizeFull + 0.5, moduleSizeFull + 0.5); 
+                    ctx.fillRect(modX, modY, moduleSizeFull + 0.3, moduleSizeFull + 0.3); 
                 }
             }
         }
@@ -331,11 +342,9 @@
     // ==========================================
     function attemptDecode(isStatic) {
         if (isProcessingResult && !isStatic) return;
-
         try {
             let foundId = null;
             const scanLines = [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8]; 
-            
             for (let ratio of scanLines) {
                 let y = Math.floor(scanCanvas.height * ratio);
                 const data = scanCtx.getImageData(0, y, scanCanvas.width, 1).data;
@@ -348,7 +357,6 @@
                     if(isBar && !inB) { inB=true; s=x; }
                     else if(!isBar && inB) { inB=false; if(x-s>2) bars.push({s:s, e:x}); }
                 }
-                
                 if(bars.length >= 17) {
                     let bP = bars.slice(-17); 
                     let id = "";
@@ -368,7 +376,6 @@
                     }
                 }
             }
-
             if (foundId) {
                 isProcessingResult = true;
                 checkDB(foundId, isStatic);
@@ -393,14 +400,13 @@
 
     let isStandardScanning = false;
     let zxingReader = null; 
-
     async function tryStandardDecode(isStatic) {
         if (isStandardScanning && !isStatic) return null; 
         isStandardScanning = true;
         let finalResult = null;
         if ('BarcodeDetector' in window) {
             try {
-                const detector = new BarcodeDetector({ formats: ['code_128', 'qr_code', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_39'] });
+                const detector = new BarcodeDetector({ formats: ['qr_code', 'code_128', 'ean_13'] });
                 const barcodes = await detector.detect(scanCanvas);
                 if (barcodes.length > 0) finalResult = { text: barcodes[0].rawValue };
             } catch (e) { }
@@ -468,7 +474,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('s') === '1') startCamera();
     }
-    const CURRENT_TERMS_VERSION = "33";
+    const CURRENT_TERMS_VERSION = "34";
     window.addEventListener('load', () => {
         const savedVersion = localStorage.getItem('soundcode_terms_version');
         if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
