@@ -91,7 +91,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
 </head>
 <body>
 
@@ -336,7 +336,7 @@
     }
     
     // ==========================================
-    // 5. THUẬT TOÁN QUÉT TỔNG HỢP
+    // 5. THUẬT TOÁN QUÉT TỔNG HỢP (KẾT HỢP QR & MÃ VẠCH 128)
     // ==========================================
     function attemptDecode(isStatic) {
         try {
@@ -378,15 +378,12 @@
                 }
             }
 
-            // Xử lý quét Soundcode
             if (foundId) {
                 checkDB(foundId, isStatic);
             } else {
-                // Xử lý quét mã QR & Mã vạch thường
                 tryStandardDecode(isStatic).then(result => {
-                    if (result) {
-                        if ("vibrate" in navigator) navigator.vibrate(100); 
-                        
+                    // Cài đặt bộ lọc: Bỏ qua nếu quét trúng cái QR trang trí của app
+                    if (result && !result.includes("sound-code-ten.vercel.app")) {
                         stopCamera();
                         document.getElementById("decodeResult").style.display = "block";
                         const isUrl = /^(http|https):\/\/[^ "]+$/.test(result);
@@ -395,7 +392,7 @@
                             <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Nhận diện thành công</p>
                             ${isUrl ? `<a href="${result}" target="_blank" class="result-link">Mở liên kết</a>` : `<div class="result-link">${result}</div>`}
                         `;
-                    } else if(isStatic) {
+                    } else if(isStatic && !result) {
                         document.getElementById('linkContainer').innerHTML = "<span style='color: var(--error-color); font-weight: bold;'>Không tìm thấy mã hợp lệ!</span>";
                     }
                 });
@@ -403,14 +400,16 @@
         } catch (err) { console.error("Lỗi quét:", err); }
     }
 
-    // Hàm hỗ trợ quét mã tiêu chuẩn (QR, Barcode 1D)
+    // Hàm tích hợp đọc mã vạch và QR
     let isStandardScanning = false;
+    const zxingReader = (typeof ZXing !== 'undefined') ? new ZXing.BrowserMultiFormatReader() : null;
+
     async function tryStandardDecode(isStatic) {
-        if (isStandardScanning && !isStatic) return null; // Tránh kẹt luồng khi quét camera
+        if (isStandardScanning && !isStatic) return null; 
         isStandardScanning = true;
         let resultText = null;
         
-        // 1. Dùng BarcodeDetector API (Tự động nhận diện QR/Mã vạch - cực nhanh trên máy đời mới)
+        // Cách 1: Ưu tiên dùng BarcodeDetector nội tại (Hỗ trợ QR và Code 128 rất tốt)
         if ('BarcodeDetector' in window) {
             try {
                 const detector = new BarcodeDetector();
@@ -419,12 +418,11 @@
             } catch (e) { }
         }
 
-        // 2. Dùng thư viện jsQR dự phòng (Hoạt động hoàn hảo cho mọi trình duyệt cũ/mới)
-        if (!resultText && typeof jsQR !== 'undefined') {
+        // Cách 2: Kế hoạch B với thư viện ZXing nếu trình duyệt không hỗ trợ BarcodeDetector
+        if (!resultText && zxingReader) {
             try {
-                const imgData = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
-                const code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: "dontInvert" });
-                if (code) resultText = code.data;
+                const result = await zxingReader.decodeFromCanvas(scanCanvas);
+                if (result) resultText = result.text;
             } catch(e) {}
         }
         
@@ -448,7 +446,7 @@
     }
 
     // ==========================================
-    // 6. KIỂM TRA & HIỆU ỨNG RUNG
+    // 6. KIỂM TRA SOUNDCODE VỚI FIREBASE
     // ==========================================
     let isChecking = false; 
     async function checkDB(id, isStatic) {
@@ -457,8 +455,6 @@
         try {
             const snap = await db.ref('soundCodes/'+id).once('value');
             if(snap.exists()) {
-                if ("vibrate" in navigator) navigator.vibrate(100); 
-                
                 stopCamera();
                 document.getElementById("decodeResult").style.display = "block";
                 const resultUrl = snap.val().url;
@@ -477,7 +473,7 @@
         isChecking = false;
     }
 
-    const CURRENT_TERMS_VERSION = "24";
+    const CURRENT_TERMS_VERSION = "20";
     window.addEventListener('load', () => {
         const savedVersion = localStorage.getItem('soundcode_terms_version');
         if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
