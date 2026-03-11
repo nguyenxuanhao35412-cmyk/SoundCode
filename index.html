@@ -88,8 +88,10 @@
         .result-link { color: var(--btn-bg); font-weight: 800; font-size: 18px; display: block; margin-top: 10px; text-decoration: none; text-transform: uppercase; word-break: break-all; }
     </style>
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 </head>
 <body>
 
@@ -183,7 +185,7 @@
     window.currentSecretId = null; 
 
     // ==========================================
-    // 2. TẠO MÃ & VẼ ĐỒ HỌA (Bỏ bộ lọc FB)
+    // 2. TẠO MÃ & VẼ ĐỒ HỌA
     // ==========================================
     async function generateSoundcode() {
         const url = document.getElementById("linkInput").value.trim();
@@ -201,19 +203,35 @@
         } catch (e) { alert("Lỗi kết nối Firebase!"); }
     }
 
-    function drawBrandLogo(ctx, x, y, radius, color) {
-        ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
-        ctx.fillStyle = "#FF9500";
-        const barW = 5.2; const gap = 6.8; const bars = [14, 42, 22, 48, 30, 16]; 
-        const totalW = (barW * bars.length) + (gap * (bars.length - 1));
-        let startX = x - totalW / 2;
-        
-        bars.forEach(h => {
-            ctx.beginPath();
-            if(ctx.roundRect) { ctx.roundRect(startX, y - h/2, barW, h, 2); } 
-            else { ctx.rect(startX, y - h/2, barW, h); }
-            ctx.fill(); startX += barW + gap;
-        });
+    function drawBrandLogo(ctx, x, y, sizeHint, color) {
+        const fullSize = sizeHint * 2; 
+
+        // Rút gọn link để hạ ma trận xuống mức tối giản nhất (25x25) thay vì (29x29)
+        const qr = qrcode(0, 'L'); 
+        qr.addData('sound-code-ten.vercel.app'); 
+        qr.make();
+
+        const moduleCount = qr.getModuleCount(); 
+        const qrDrawSize = fullSize * 0.95; 
+        const moduleSizeFull = qrDrawSize / moduleCount; 
+
+        const startX = x - qrDrawSize/2;
+        const startY = y - qrDrawSize/2;
+
+        ctx.fillStyle = color;
+
+        // Vẽ các khối dính liền hoàn toàn vào nhau
+        for (let row = 0; row < moduleCount; row++) {
+            for (let col = 0; col < moduleCount; col++) {
+                if (qr.isDark(row, col)) {
+                    const modX = startX + col * moduleSizeFull;
+                    const modY = startY + row * moduleSizeFull;
+
+                    // Cộng thêm 0.5px để triệt tiêu hoàn toàn viền trắng do cơ chế chống răng cưa của Canvas
+                    ctx.fillRect(modX, modY, moduleSizeFull + 0.5, moduleSizeFull + 0.5); 
+                }
+            }
+        }
     }
 
     function drawBarcodeGraphics(id) {
@@ -318,7 +336,7 @@
     }
     
     // ==========================================
-    // 5. THUẬT TOÁN QUÉT
+    // 5. THUẬT TOÁN QUÉT TỔNG HỢP
     // ==========================================
     function attemptDecode(isStatic) {
         try {
@@ -360,12 +378,58 @@
                 }
             }
 
+            // Xử lý quét Soundcode
             if (foundId) {
                 checkDB(foundId, isStatic);
-            } else if(isStatic) {
-                document.getElementById('linkContainer').innerHTML = "<span style='color: var(--error-color); font-weight: bold;'>Không tìm thấy mã hợp lệ!</span>";
+            } else {
+                // Xử lý quét mã QR & Mã vạch thường
+                tryStandardDecode(isStatic).then(result => {
+                    if (result) {
+                        if ("vibrate" in navigator) navigator.vibrate(100); 
+                        
+                        stopCamera();
+                        document.getElementById("decodeResult").style.display = "block";
+                        const isUrl = /^(http|https):\/\/[^ "]+$/.test(result);
+
+                        document.getElementById('linkContainer').innerHTML = `
+                            <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Nhận diện thành công</p>
+                            ${isUrl ? `<a href="${result}" target="_blank" class="result-link">Mở liên kết</a>` : `<div class="result-link">${result}</div>`}
+                        `;
+                    } else if(isStatic) {
+                        document.getElementById('linkContainer').innerHTML = "<span style='color: var(--error-color); font-weight: bold;'>Không tìm thấy mã hợp lệ!</span>";
+                    }
+                });
             }
         } catch (err) { console.error("Lỗi quét:", err); }
+    }
+
+    // Hàm hỗ trợ quét mã tiêu chuẩn (QR, Barcode 1D)
+    let isStandardScanning = false;
+    async function tryStandardDecode(isStatic) {
+        if (isStandardScanning && !isStatic) return null; // Tránh kẹt luồng khi quét camera
+        isStandardScanning = true;
+        let resultText = null;
+        
+        // 1. Dùng BarcodeDetector API (Tự động nhận diện QR/Mã vạch - cực nhanh trên máy đời mới)
+        if ('BarcodeDetector' in window) {
+            try {
+                const detector = new BarcodeDetector();
+                const barcodes = await detector.detect(scanCanvas);
+                if (barcodes.length > 0) resultText = barcodes[0].rawValue;
+            } catch (e) { }
+        }
+
+        // 2. Dùng thư viện jsQR dự phòng (Hoạt động hoàn hảo cho mọi trình duyệt cũ/mới)
+        if (!resultText && typeof jsQR !== 'undefined') {
+            try {
+                const imgData = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+                const code = jsQR(imgData.data, imgData.width, imgData.height, { inversionAttempts: "dontInvert" });
+                if (code) resultText = code.data;
+            } catch(e) {}
+        }
+        
+        isStandardScanning = false;
+        return resultText;
     }
 
     function getH(x, startY, isW) {
@@ -393,10 +457,7 @@
         try {
             const snap = await db.ref('soundCodes/'+id).once('value');
             if(snap.exists()) {
-                // HIỆU ỨNG RUNG KHI QUÉT TRÚNG
-                if ("vibrate" in navigator) {
-                    navigator.vibrate(100); // Rung nhẹ 100ms
-                }
+                if ("vibrate" in navigator) navigator.vibrate(100); 
                 
                 stopCamera();
                 document.getElementById("decodeResult").style.display = "block";
@@ -416,7 +477,7 @@
         isChecking = false;
     }
 
-    const CURRENT_TERMS_VERSION = "4";
+    const CURRENT_TERMS_VERSION = "24";
     window.addEventListener('load', () => {
         const savedVersion = localStorage.getItem('soundcode_terms_version');
         if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
@@ -433,6 +494,3 @@
 </script>
 </body>
 </html>
-
-
-
