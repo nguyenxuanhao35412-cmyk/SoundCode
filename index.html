@@ -78,6 +78,9 @@
 
         .scanner-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; z-index: 9999; background: #000; }
         .scanner-container video { width: 100%; height: 100%; object-fit: cover; }
+        
+        #trackingOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 9998; pointer-events: none; }
+        
         .close-btn { position: absolute; top: 40px; right: 20px; background: rgba(0,0,0,0.8); color: #fff; border: 1px solid #fff; padding: 8px 20px; border-radius: 8px; font-weight: 800; font-size: 11px; z-index: 10000; text-transform: uppercase; cursor: pointer; }
         
         .result-box { margin-top: 20px; background: var(--bg-input); padding: 15px; border-radius: 12px; border: 2px solid var(--btn-bg); display: none; }
@@ -146,6 +149,7 @@
         <div class="scanner-container" id="scannerContainer">
             <button class="close-btn" onclick="stopCamera()">Đóng</button>
             <video id="videoFeed" autoplay playsinline></video>
+            <canvas id="trackingOverlay"></canvas>
         </div>
         
         <canvas id="hiddenScanCanvas" style="display: none;"></canvas>
@@ -178,6 +182,7 @@
     const db = firebase.database();
 
     window.currentSecretId = null; 
+    let isProcessingResult = false; 
 
     // ==========================================
     // 2. TẠO MÃ & VẼ ĐỒ HỌA
@@ -200,7 +205,6 @@
 
     function drawBrandLogo(ctx, x, y, sizeHint, color) {
         const fullSize = sizeHint * 2; 
-
         const qr = qrcode(0, 'L'); 
         qr.addData('sound-code-ten.vercel.app/?s=1'); 
         qr.make();
@@ -259,7 +263,7 @@
     }
 
     // ==========================================
-    // 3. XỬ LÝ UPLOAD ẢNH & KÉO THẢ
+    // 3. XỬ LÝ UPLOAD ẢNH & KÉO THẢ (ĐÃ VÁ LỖI TRONG SUỐT)
     // ==========================================
     const dropZone = document.getElementById('dropZone'); 
     const fileInput = document.getElementById('fileInput');
@@ -284,6 +288,10 @@
                 document.getElementById('previewImg').src = img.src;
                 document.getElementById('previewContainer').style.display = "block";
                 scanCanvas.width = img.width; scanCanvas.height = img.height;
+                
+                // GIẢI PHÁP VÁ LỖI: Lót nền trắng để khử nền trong suốt của ảnh PNG mã vạch
+                scanCtx.fillStyle = "#ffffff";
+                scanCtx.fillRect(0, 0, scanCanvas.width, scanCanvas.height);
                 scanCtx.drawImage(img, 0, 0);
             };
             img.src = event.target.result;
@@ -292,9 +300,14 @@
     }
 
     function executeStaticScan() {
+        // GIẢI PHÁP VÁ LỖI: Reset cờ ngăn chặn phân tích liên tục khi quét nhiều ảnh
+        isProcessingResult = false; 
+        isChecking = false;
+        
         document.getElementById('decodeResult').style.display = "block";
         document.getElementById('linkContainer').innerHTML = "Đang phân tích...";
-        setTimeout(() => attemptDecode(true), 1000);
+        // Tối ưu UX: Rút ngắn thời gian chờ xử lý ảnh tĩnh
+        setTimeout(() => attemptDecode(true), 300); 
     }
     
     // ==========================================
@@ -308,12 +321,16 @@
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 } } });
             video.srcObject = stream;
             document.getElementById('scannerContainer').style.display = "block";
-            isScanning = true; requestAnimationFrame(scanLoop);
+            isScanning = true; 
+            isProcessingResult = false;
+            requestAnimationFrame(scanLoop);
         } catch (e) { alert("Lỗi Camera!"); }
     }
     
     function stopCamera() {
-        isScanning = false; if(video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+        isScanning = false; 
+        isProcessingResult = false;
+        if(video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
         document.getElementById('scannerContainer').style.display = "none";
     }
     
@@ -321,17 +338,53 @@
         if(!isScanning) return;
         if(video.videoWidth > 0) {
             scanCanvas.width = video.videoWidth; scanCanvas.height = video.videoHeight;
-            scanCtx.drawImage(video, 0, 0); attemptDecode(false);
+            scanCtx.drawImage(video, 0, 0); 
+            
+            const trackingOverlay = document.getElementById('trackingOverlay');
+            if(trackingOverlay) {
+                trackingOverlay.width = video.videoWidth; trackingOverlay.height = video.videoHeight;
+                const trackingCtx = trackingOverlay.getContext('2d');
+                trackingCtx.clearRect(0, 0, trackingOverlay.width, trackingOverlay.height);
+            }
+
+            attemptDecode(false);
         }
-        setTimeout(() => requestAnimationFrame(scanLoop), 200);
+        setTimeout(() => requestAnimationFrame(scanLoop), 80); 
+    }
+
+    function drawTrackingDots(points) {
+        if (!points || points.length === 0) return;
+        const trackingOverlay = document.getElementById('trackingOverlay');
+        const ctx = trackingOverlay.getContext('2d');
+        
+        ctx.fillStyle = 'rgba(255, 149, 0, 0.9)';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#FF9500';
+        
+        points.forEach(p => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 7, 0, 2 * Math.PI);
+            ctx.fill();
+        });
+
+        ctx.strokeStyle = 'rgba(255, 149, 0, 0.7)';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([8, 8]);
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for(let i=1; i<points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.setLineDash([]); 
     }
     
     // ==========================================
-    // 5. THUẬT TOÁN QUÉT TỔNG HỢP
+    // 5. THUẬT TOÁN QUÉT TỔNG HỢP & AR TRACKING
     // ==========================================
     function attemptDecode(isStatic) {
         try {
             let foundId = null;
+            let soundcodePoints = null; 
             const scanLines = [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8]; 
             
             for (let ratio of scanLines) {
@@ -364,24 +417,42 @@
                             let val = Math.round((h / refH) * 11) - 1;
                             id += Math.max(0, Math.min(9, val));
                         }
-                        if(valid && id.length === 14) { foundId = id; break; }
+                        if(valid && id.length === 14) { 
+                            foundId = id; 
+                            soundcodePoints = [
+                                {x: bP[0].s, y: y - 40},
+                                {x: bP[16].e, y: y - 40},
+                                {x: bP[16].e, y: y + 40},
+                                {x: bP[0].s, y: y + 40}
+                            ];
+                            break; 
+                        }
                     }
                 }
             }
 
             if (foundId) {
-                checkDB(foundId, isStatic);
+                if(!isStatic && soundcodePoints) drawTrackingDots(soundcodePoints);
+                if(!isProcessingResult) {
+                    isProcessingResult = true;
+                    // Bỏ qua độ trễ AR tracking nếu đang dùng ảnh kéo thả
+                    setTimeout(() => checkDB(foundId, isStatic), isStatic ? 0 : 600); 
+                }
             } else {
                 tryStandardDecode(isStatic).then(result => {
                     if (result && !result.includes("sound-code-ten.vercel.app")) {
-                        stopCamera();
-                        document.getElementById("decodeResult").style.display = "block";
-                        const isUrl = /^(http|https):\/\/[^ "]+$/.test(result);
-
-                        document.getElementById('linkContainer').innerHTML = `
-                            <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Nhận diện thành công</p>
-                            ${isUrl ? `<a href="${result}" target="_blank" class="result-link">Mở liên kết</a>` : `<div class="result-link">${result}</div>`}
-                        `;
+                        if(!isProcessingResult) {
+                            isProcessingResult = true;
+                            setTimeout(() => {
+                                stopCamera();
+                                document.getElementById("decodeResult").style.display = "block";
+                                const isUrl = /^(http|https):\/\/[^ "]+$/.test(result);
+                                document.getElementById('linkContainer').innerHTML = `
+                                    <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Nhận diện thành công</p>
+                                    ${isUrl ? `<a href="${result}" target="_blank" class="result-link">Mở liên kết</a>` : `<div class="result-link">${result}</div>`}
+                                `;
+                            }, isStatic ? 0 : 600); 
+                        }
                     } else if(isStatic && !result) {
                         document.getElementById('linkContainer').innerHTML = "<span style='color: var(--error-color); font-weight: bold;'>Không tìm thấy mã hợp lệ!</span>";
                     }
@@ -402,7 +473,10 @@
             try {
                 const detector = new BarcodeDetector({ formats: ['code_128', 'qr_code', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_39'] });
                 const barcodes = await detector.detect(scanCanvas);
-                if (barcodes.length > 0) resultText = barcodes[0].rawValue;
+                if (barcodes.length > 0) {
+                    resultText = barcodes[0].rawValue;
+                    if(!isStatic) drawTrackingDots(barcodes[0].cornerPoints); 
+                }
             } catch (e) { }
         }
 
@@ -412,8 +486,22 @@
                     zxingReader = new ZXing.BrowserMultiFormatReader();
                 }
                 if (zxingReader) {
-                    const result = await zxingReader.decodeFromCanvas(scanCanvas);
-                    if (result) resultText = result.text;
+                    // Cải thiện: Quét ảnh trực tiếp từ thẻ img nếu là ảnh kéo thả để tối ưu cho Code 128
+                    const source = isStatic ? document.getElementById('previewImg') : scanCanvas;
+                    let result;
+                    if(isStatic) {
+                        result = await zxingReader.decodeFromImageElement(source);
+                    } else {
+                        result = await zxingReader.decodeFromCanvas(source);
+                    }
+                    
+                    if (result) {
+                        resultText = result.text;
+                        if(!isStatic && result.resultPoints) {
+                            const pts = result.resultPoints.map(p => ({x: p.getX(), y: p.getY()}));
+                            drawTrackingDots(pts);
+                        }
+                    }
                 }
             } catch(e) { }
         }
@@ -447,6 +535,8 @@
         try {
             const snap = await db.ref('soundCodes/'+id).once('value');
             if(snap.exists()) {
+                if ("vibrate" in navigator) navigator.vibrate(100); 
+                
                 stopCamera();
                 document.getElementById("decodeResult").style.display = "block";
                 const resultUrl = snap.val().url;
@@ -463,6 +553,7 @@
             }
         } catch (e) { console.error("Lỗi tra cứu:", e); }
         isChecking = false;
+        isProcessingResult = false; // Mở khóa quét lại
     }
 
     // ==========================================
@@ -475,7 +566,7 @@
         }
     }
 
-    const CURRENT_TERMS_VERSION = "25";
+    const CURRENT_TERMS_VERSION = "26";
     window.addEventListener('load', () => {
         const savedVersion = localStorage.getItem('soundcode_terms_version');
         if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
