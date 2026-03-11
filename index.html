@@ -263,7 +263,7 @@
     }
 
     // ==========================================
-    // 3. XỬ LÝ UPLOAD ẢNH & KÉO THẢ (ĐÃ VÁ LỖI TRONG SUỐT)
+    // 3. XỬ LÝ UPLOAD ẢNH & KÉO THẢ
     // ==========================================
     const dropZone = document.getElementById('dropZone'); 
     const fileInput = document.getElementById('fileInput');
@@ -289,7 +289,6 @@
                 document.getElementById('previewContainer').style.display = "block";
                 scanCanvas.width = img.width; scanCanvas.height = img.height;
                 
-                // GIẢI PHÁP VÁ LỖI: Lót nền trắng để khử nền trong suốt của ảnh PNG mã vạch
                 scanCtx.fillStyle = "#ffffff";
                 scanCtx.fillRect(0, 0, scanCanvas.width, scanCanvas.height);
                 scanCtx.drawImage(img, 0, 0);
@@ -300,18 +299,16 @@
     }
 
     function executeStaticScan() {
-        // GIẢI PHÁP VÁ LỖI: Reset cờ ngăn chặn phân tích liên tục khi quét nhiều ảnh
         isProcessingResult = false; 
         isChecking = false;
         
         document.getElementById('decodeResult').style.display = "block";
         document.getElementById('linkContainer').innerHTML = "Đang phân tích...";
-        // Tối ưu UX: Rút ngắn thời gian chờ xử lý ảnh tĩnh
         setTimeout(() => attemptDecode(true), 300); 
     }
     
     // ==========================================
-    // 4. CAMERA THỜI GIAN THỰC
+    // 4. CAMERA THỜI GIAN THỰC & AR EFFECTS
     // ==========================================
     const video = document.getElementById('videoFeed'); let isScanning = false;
     
@@ -352,30 +349,55 @@
         setTimeout(() => requestAnimationFrame(scanLoop), 80); 
     }
 
+    function generatePerimeterDots(corners) {
+        if (!corners || corners.length < 2) return corners;
+        let dots = [];
+        const numDots = 12; 
+        
+        if (corners.length === 2) {
+            for (let j = 0; j <= numDots * 2; j++) {
+                dots.push({
+                    x: corners[0].x + (corners[1].x - corners[0].x) * (j / (numDots * 2)),
+                    y: corners[0].y + (corners[1].y - corners[0].y) * (j / (numDots * 2))
+                });
+            }
+        } else {
+            for (let i = 0; i < corners.length; i++) {
+                let p1 = corners[i];
+                let p2 = corners[(i + 1) % corners.length];
+                for (let j = 0; j < numDots; j++) {
+                    dots.push({
+                        x: p1.x + (p2.x - p1.x) * (j / numDots),
+                        y: p1.y + (p2.y - p1.y) * (j / numDots)
+                    });
+                }
+            }
+        }
+        return dots;
+    }
+
     function drawTrackingDots(points) {
         if (!points || points.length === 0) return;
         const trackingOverlay = document.getElementById('trackingOverlay');
         const ctx = trackingOverlay.getContext('2d');
         
-        ctx.fillStyle = 'rgba(255, 149, 0, 0.9)';
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = '#FF9500';
-        
         points.forEach(p => {
+            let r = 2.5 + Math.random() * 3.5; 
+            let alpha = 0.5 + Math.random() * 0.5;
+            
             ctx.beginPath();
-            ctx.arc(p.x, p.y, 7, 0, 2 * Math.PI);
+            ctx.arc(p.x, p.y, r, 0, 2 * Math.PI);
+            ctx.fillStyle = `rgba(255, 149, 0, ${alpha})`;
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = '#FF9500';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, r * 0.4, 0, 2 * Math.PI);
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+            ctx.shadowBlur = 0; 
             ctx.fill();
         });
-
-        ctx.strokeStyle = 'rgba(255, 149, 0, 0.7)';
-        ctx.lineWidth = 3;
-        ctx.setLineDash([8, 8]);
-        ctx.beginPath();
-        ctx.moveTo(points[0].x, points[0].y);
-        for(let i=1; i<points.length; i++) ctx.lineTo(points[i].x, points[i].y);
-        ctx.closePath();
-        ctx.stroke();
-        ctx.setLineDash([]); 
     }
     
     // ==========================================
@@ -384,7 +406,7 @@
     function attemptDecode(isStatic) {
         try {
             let foundId = null;
-            let soundcodePoints = null; 
+            let soundcodePoints = []; 
             const scanLines = [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8]; 
             
             for (let ratio of scanLines) {
@@ -417,14 +439,19 @@
                             let val = Math.round((h / refH) * 11) - 1;
                             id += Math.max(0, Math.min(9, val));
                         }
+                        
                         if(valid && id.length === 14) { 
                             foundId = id; 
-                            soundcodePoints = [
-                                {x: bP[0].s, y: y - 40},
-                                {x: bP[16].e, y: y - 40},
-                                {x: bP[16].e, y: y + 40},
-                                {x: bP[0].s, y: y + 40}
-                            ];
+                            
+                            soundcodePoints = [];
+                            for(let j=0; j<17; j++) {
+                                let cx = Math.floor((bP[j].s + bP[j].e) / 2);
+                                let ch = getH(cx, y, isWhite);
+                                if(ch > 0) {
+                                    soundcodePoints.push({x: cx, y: y - ch - 3}); 
+                                    soundcodePoints.push({x: cx, y: y + ch + 3}); 
+                                }
+                            }
                             break; 
                         }
                     }
@@ -432,10 +459,9 @@
             }
 
             if (foundId) {
-                if(!isStatic && soundcodePoints) drawTrackingDots(soundcodePoints);
+                if(!isStatic && soundcodePoints.length > 0) drawTrackingDots(soundcodePoints);
                 if(!isProcessingResult) {
                     isProcessingResult = true;
-                    // Bỏ qua độ trễ AR tracking nếu đang dùng ảnh kéo thả
                     setTimeout(() => checkDB(foundId, isStatic), isStatic ? 0 : 600); 
                 }
             } else {
@@ -447,9 +473,10 @@
                                 stopCamera();
                                 document.getElementById("decodeResult").style.display = "block";
                                 const isUrl = /^(http|https):\/\/[^ "]+$/.test(result);
+                                // THAY ĐỔI YÊU CẦU: HIỂN THỊ LINK THẬT ĐỂ NGƯỜI DÙNG QUYẾT ĐỊNH
                                 document.getElementById('linkContainer').innerHTML = `
                                     <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Nhận diện thành công</p>
-                                    ${isUrl ? `<a href="${result}" target="_blank" class="result-link">Mở liên kết</a>` : `<div class="result-link">${result}</div>`}
+                                    ${isUrl ? `<a href="${result}" target="_blank" class="result-link">${result}</a>` : `<div class="result-link">${result}</div>`}
                                 `;
                             }, isStatic ? 0 : 600); 
                         }
@@ -475,7 +502,7 @@
                 const barcodes = await detector.detect(scanCanvas);
                 if (barcodes.length > 0) {
                     resultText = barcodes[0].rawValue;
-                    if(!isStatic) drawTrackingDots(barcodes[0].cornerPoints); 
+                    if(!isStatic) drawTrackingDots(generatePerimeterDots(barcodes[0].cornerPoints)); 
                 }
             } catch (e) { }
         }
@@ -486,7 +513,6 @@
                     zxingReader = new ZXing.BrowserMultiFormatReader();
                 }
                 if (zxingReader) {
-                    // Cải thiện: Quét ảnh trực tiếp từ thẻ img nếu là ảnh kéo thả để tối ưu cho Code 128
                     const source = isStatic ? document.getElementById('previewImg') : scanCanvas;
                     let result;
                     if(isStatic) {
@@ -499,7 +525,7 @@
                         resultText = result.text;
                         if(!isStatic && result.resultPoints) {
                             const pts = result.resultPoints.map(p => ({x: p.getX(), y: p.getY()}));
-                            drawTrackingDots(pts);
+                            drawTrackingDots(generatePerimeterDots(pts));
                         }
                     }
                 }
@@ -542,9 +568,10 @@
                 const resultUrl = snap.val().url;
                 const isUrl = /^(http|https):\/\/[^ "]+$/.test(resultUrl);
 
+                // THAY ĐỔI YÊU CẦU: HIỂN THỊ LINK THẬT ĐỂ NGƯỜI DÙNG QUYẾT ĐỊNH
                 document.getElementById('linkContainer').innerHTML = `
                     <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase">Nhận diện thành công</p>
-                    ${isUrl ? `<a href="${resultUrl}" target="_blank" class="result-link">Mở liên kết</a>` : `<div class="result-link">${resultUrl}</div>`}
+                    ${isUrl ? `<a href="${resultUrl}" target="_blank" class="result-link">${resultUrl}</a>` : `<div class="result-link">${resultUrl}</div>`}
                 `;
             } else {
                 if(isStatic) {
@@ -553,7 +580,7 @@
             }
         } catch (e) { console.error("Lỗi tra cứu:", e); }
         isChecking = false;
-        isProcessingResult = false; // Mở khóa quét lại
+        isProcessingResult = false; 
     }
 
     // ==========================================
@@ -566,7 +593,7 @@
         }
     }
 
-    const CURRENT_TERMS_VERSION = "26";
+    const CURRENT_TERMS_VERSION = "27";
     window.addEventListener('load', () => {
         const savedVersion = localStorage.getItem('soundcode_terms_version');
         if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
