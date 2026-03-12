@@ -101,7 +101,7 @@
     <div style="background:#1f1f29; width:85%; max-width:400px; padding:30px; border-radius:24px; border:1px solid #FF9500; text-align:center;">
         <h2 style="color:#fff; margin-top:0;">📜 ĐIỀU KHOẢN</h2>
         <div style="color:#888; font-size:14px; text-align:left; margin:20px 0; max-height:200px; overflow-y:auto; padding-right:10px;">
-            Chào mừng bạn đến với SoundCode!<br><br>
+            Chào mừng sếp đến với SoundCode!<br><br>
             - Chúng tôi cung cấp dịch vụ chuyển hoá đường dẫn, liên kết thành các đoạn mã vạch được mã hoá có hình dạng âm thanh.<br>
             - Chúng tôi không lưu hình ảnh của bạn.<br>
             - Xin lưu ý: App cần dùng <b>Camera</b> để quét mã.<br>
@@ -188,7 +188,7 @@
     let isProcessingResult = false; 
 
     // ==========================================
-    // 2. TẠO MÃ & VẼ ĐỒ HỌA (ĐÃ TĂNG ĐỘ NÉT LÊN 4 LẦN)
+    // 2. TẠO MÃ & VẼ ĐỒ HỌA
     // ==========================================
     async function generateSoundcode() {
         const url = document.getElementById("linkInput").value.trim();
@@ -241,7 +241,6 @@
         const isLight = document.body.classList.contains('light-mode');
         const bgColor = isLight ? "#ffffff" : "#000000"; const fgColor = isLight ? "#000000" : "#ffffff";
         
-        // THUẬT TOÁN TĂNG ĐỘ NÉT (SCALE x4 Ultra HD)
         const baseWidth = 550; 
         const baseHeight = 150;
         const scale = 4; 
@@ -278,7 +277,6 @@
     function downloadCode() {
         const canvas = document.getElementById("encodeCanvas");
         const link = document.createElement("a"); link.download = "Soundcode.png";
-        // Xuất ảnh ra với chất lượng tối đa
         link.href = canvas.toDataURL("image/png", 1.0); 
         link.click();
     }
@@ -390,7 +388,7 @@
     }
     
     // ==========================================
-    // 5. THUẬT TOÁN QUÉT TỔNG HỢP
+    // 5. THUẬT TOÁN QUÉT TỔNG HỢP (ĐÃ NÂNG CẤP ĐỘ NHẠY SÁNG & TRƯỢT KHUNG)
     // ==========================================
     function attemptDecode(isStatic) {
         if (isProcessingResult && !isStatic) return;
@@ -402,30 +400,48 @@
                 const data = scanCtx.getImageData(0, y, scanCanvas.width, 1).data;
                 let edge = 0; for(let i=0; i<10; i++) edge += (data[i*4] + data[i*4+1] + data[i*4+2]) / 3;
                 const isWhite = (edge/10) > 127;
+                
                 let bars = []; let inB = false; let s = 0;
                 for(let x=0; x<scanCanvas.width; x++) {
                     let p = (data[x*4] + data[x*4+1] + data[x*4+2]) / 3;
-                    let isBar = isWhite ? (p < 100) : (p > 150);
+                    // CẬP NHẬT: Tăng dung sai tương phản để quét tốt trong bóng tối (125/130 thay vì 100/150)
+                    let isBar = isWhite ? (p < 125) : (p > 130);
                     if(isBar && !inB) { inB=true; s=x; }
                     else if(!isBar && inB) { inB=false; if(x-s>2) bars.push({s:s, e:x}); }
                 }
+
+                // CẬP NHẬT: Kích hoạt Sliding Window quét qua mọi nhóm 17 vạch thay vì chỉ lấy phần đuôi
                 if(bars.length >= 17) {
-                    let bP = bars.slice(-17); 
-                    let id = "";
-                    let midX = Math.floor((bP[8].s + bP[8].e) / 2);
-                    let refH = getH(midX, y, isWhite); 
-                    if(refH > 5) {
-                        let valid = true;
-                        for(let i=0; i<17; i++) {
-                            if (i === 0 || i === 8 || i === 16) continue;
-                            let curX = Math.floor((bP[i].s + bP[i].e) / 2);
-                            let h = getH(curX, y, isWhite);
-                            if (h <= 0) { valid = false; break; }
-                            let val = Math.round((h / refH) * 11) - 1;
-                            id += Math.max(0, Math.min(9, val));
+                    for (let startIndex = 0; startIndex <= bars.length - 17; startIndex++) {
+                        let bP = bars.slice(startIndex, startIndex + 17);
+                        let id = "";
+                        let midX = Math.floor((bP[8].s + bP[8].e) / 2);
+                        let refH = getH(midX, y, isWhite); 
+
+                        if(refH > 5) {
+                            let valid = true;
+                            // CẬP NHẬT: Kiểm tra tính hợp lệ của mốc (2 vạch ngoài cùng phải thấp hơn vạch giữa)
+                            let h0 = getH(Math.floor((bP[0].s + bP[0].e) / 2), y, isWhite);
+                            let h16 = getH(Math.floor((bP[16].s + bP[16].e) / 2), y, isWhite);
+                            if (h0 > refH * 0.7 || h16 > refH * 0.7) valid = false;
+
+                            if (valid) {
+                                for(let i=0; i<17; i++) {
+                                    if (i === 0 || i === 8 || i === 16) continue;
+                                    let curX = Math.floor((bP[i].s + bP[i].e) / 2);
+                                    let h = getH(curX, y, isWhite);
+                                    if (h <= 0) { valid = false; break; }
+                                    
+                                    let val = Math.round((h / refH) * 11) - 1;
+                                    // CẬP NHẬT: Chặn lọc rác triệt để (id chỉ có thể là số từ 0-9)
+                                    if (val < 0 || val > 9) { valid = false; break; }
+                                    id += val;
+                                }
+                                if(valid && id.length === 14) { foundId = id; break; }
+                            }
                         }
-                        if(valid && id.length === 14) { foundId = id; break; }
                     }
+                    if (foundId) break; // Thoát vòng lặp scanLines nếu đã tìm thấy
                 }
             }
             if (foundId) {
@@ -481,13 +497,17 @@
         x = Math.floor(x); startY = Math.floor(startY);
         const img = scanCtx.getImageData(x, 0, 1, scanCanvas.height).data;
         let h = 0;
+        let miss = 0; // CẬP NHẬT: Thêm dung sai 1 pixel để lướt qua các hạt bụi hoặc xước nhỏ trên vạch
         for(let y=startY; y>=0; y--) { 
             let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3; 
-            if(isW ? p<100 : p>150) h++; else break; 
+            if(isW ? p<125 : p>130) { h++; miss = 0; } 
+            else { miss++; if(miss > 1) break; } 
         }
+        miss = 0;
         for(let y=startY+1; y<scanCanvas.height; y++) { 
             let p = (img[y*4]+img[y*4+1]+img[y*4+2])/3; 
-            if(isW ? p<100 : p>150) h++; else break; 
+            if(isW ? p<125 : p>130) { h++; miss = 0; } 
+            else { miss++; if(miss > 1) break; } 
         }
         return h;
     }
@@ -526,7 +546,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('s') === '1') startCamera();
     }
-    const CURRENT_TERMS_VERSION = "37";
+    const CURRENT_TERMS_VERSION = "38";
     window.addEventListener('load', () => {
         const savedVersion = localStorage.getItem('soundcode_terms_version');
         if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
