@@ -76,13 +76,11 @@
             transition: all 0.2s ease;
         }
 
-        /* Thêm overflow: hidden để khi zoom CSS không bị kéo tràn khung */
         .scanner-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; z-index: 9999; background: #000; overflow: hidden; }
         .scanner-container video { width: 100%; height: 100%; object-fit: cover; transition: transform 0.1s ease-out; transform-origin: center; }
         
         .close-btn { position: absolute; top: 40px; right: 20px; background: rgba(0,0,0,0.8); color: #fff; border: 1px solid #fff; padding: 8px 20px; border-radius: 8px; font-weight: 800; font-size: 11px; z-index: 10000; text-transform: uppercase; cursor: pointer; }
         
-        /* Giao diện thanh trượt Zoom */
         #zoomSlider { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); width: 70%; max-width: 300px; z-index: 10000; -webkit-appearance: none; background: rgba(255, 255, 255, 0.3); height: 6px; border-radius: 5px; outline: none; backdrop-filter: blur(5px); }
         #zoomSlider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--btn-bg); cursor: pointer; box-shadow: 0 0 15px var(--btn-bg); border: 2px solid #fff; }
         #zoomSlider::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: var(--btn-bg); cursor: pointer; box-shadow: 0 0 15px var(--btn-bg); border: 2px solid #fff; }
@@ -311,7 +309,7 @@
     }
     
     // ==========================================
-    // 4. CAMERA THỜI GIAN THỰC & CHỨC NĂNG ZOOM
+    // 4. CAMERA THỜI GIAN THỰC & CHỨC NĂNG ZOOM (ĐÃ FIX GIỚI HẠN)
     // ==========================================
     const video = document.getElementById('videoFeed'); let isScanning = false;
     let videoTrack = null;
@@ -322,18 +320,17 @@
             const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 } } });
             video.srcObject = stream;
             
-            // XỬ LÝ CHỨC NĂNG ZOOM
             videoTrack = stream.getVideoTracks()[0];
             const zoomSlider = document.getElementById("zoomSlider");
-            video.style.transform = "scale(1)"; // Reset zoom giao diện CSS
+            video.style.transform = "scale(1)"; 
             
-            // Đợi 500ms cho camera ổn định rồi mới kiểm tra khả năng Zoom
             setTimeout(() => {
                 const capabilities = videoTrack.getCapabilities ? videoTrack.getCapabilities() : {};
                 if (capabilities.zoom) {
                     zoomSlider.min = capabilities.zoom.min;
-                    zoomSlider.max = capabilities.zoom.max;
-                    zoomSlider.step = capabilities.zoom.step;
+                    // FIX: Khống chế max zoom ở mức 3x để thanh trượt tận dụng hết không gian không bị liệt
+                    zoomSlider.max = Math.min(capabilities.zoom.max, 3);
+                    zoomSlider.step = capabilities.zoom.step || 0.1;
                     zoomSlider.value = capabilities.zoom.min;
                 } else {
                     zoomSlider.min = 1;
@@ -350,7 +347,6 @@
                         await videoTrack.applyConstraints({ advanced: [{ zoom: parseFloat(e.target.value) }] });
                     } catch (err) { console.log(err); }
                 } else {
-                    // Fallback: Nếu không hỗ trợ Zoom phần cứng (VD iOS), dùng Zoom kỹ thuật số (CSS)
                     video.style.transform = `scale(${e.target.value})`;
                 }
             };
@@ -511,10 +507,10 @@
     // 7. KHỞI CHẠY & KIỂM TRA TỰ ĐỘNG BẬT CAMERA
     // ==========================================
     function checkAutoScan() {
-        const urlParams = newSearchParams(window.location.search);
+        const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('s') === '1') startCamera();
     }
-    const CURRENT_TERMS_VERSION = "35";
+    const CURRENT_TERMS_VERSION = "36";
     window.addEventListener('load', () => {
         const savedVersion = localStorage.getItem('soundcode_terms_version');
         if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
