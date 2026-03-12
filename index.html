@@ -101,7 +101,7 @@
     <div style="background:#1f1f29; width:85%; max-width:400px; padding:30px; border-radius:24px; border:1px solid #FF9500; text-align:center;">
         <h2 style="color:#fff; margin-top:0;">📜 ĐIỀU KHOẢN</h2>
         <div style="color:#888; font-size:14px; text-align:left; margin:20px 0; max-height:200px; overflow-y:auto; padding-right:10px;">
-            Chào mừng sếp đến với SoundCode!<br><br>
+            Chào mừng bạn đến với SoundCode!<br><br>
             - Chúng tôi cung cấp dịch vụ chuyển hoá đường dẫn, liên kết thành các đoạn mã vạch được mã hoá có hình dạng âm thanh.<br>
             - Chúng tôi không lưu hình ảnh của bạn.<br>
             - Xin lưu ý: App cần dùng <b>Camera</b> để quét mã.<br>
@@ -188,7 +188,7 @@
     let isProcessingResult = false; 
 
     // ==========================================
-    // 2. TẠO MÃ & VẼ ĐỒ HỌA
+    // 2. TẠO MÃ & VẼ ĐỒ HỌA (ĐÃ TĂNG ĐỘ NÉT LÊN 4 LẦN)
     // ==========================================
     async function generateSoundcode() {
         const url = document.getElementById("linkInput").value.trim();
@@ -240,9 +240,23 @@
         const canvas = document.getElementById("encodeCanvas"); const ctx = canvas.getContext("2d");
         const isLight = document.body.classList.contains('light-mode');
         const bgColor = isLight ? "#ffffff" : "#000000"; const fgColor = isLight ? "#000000" : "#ffffff";
-        ctx.fillStyle = bgColor; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        const cy = canvas.height/2; const logoX = 65; const logoRadius = 40;
+        
+        // THUẬT TOÁN TĂNG ĐỘ NÉT (SCALE x4 Ultra HD)
+        const baseWidth = 550; 
+        const baseHeight = 150;
+        const scale = 4; 
+        
+        canvas.width = baseWidth * scale;
+        canvas.height = baseHeight * scale;
+        canvas.style.width = "100%";
+        canvas.style.maxWidth = "550px"; 
+        ctx.scale(scale, scale);
+
+        ctx.fillStyle = bgColor; ctx.fillRect(0, 0, baseWidth, baseHeight);
+        const cy = baseHeight/2; const logoX = 65; const logoRadius = 40;
+        
         drawBrandLogo(ctx, logoX, cy, logoRadius, fgColor);
+        
         ctx.fillStyle = fgColor; let startX = 145;
         for (let i = 0; i < 17; i++) {
             let hR;
@@ -262,8 +276,11 @@
     }
 
     function downloadCode() {
+        const canvas = document.getElementById("encodeCanvas");
         const link = document.createElement("a"); link.download = "Soundcode.png";
-        link.href = document.getElementById("encodeCanvas").toDataURL(); link.click();
+        // Xuất ảnh ra với chất lượng tối đa
+        link.href = canvas.toDataURL("image/png", 1.0); 
+        link.click();
     }
 
     // ==========================================
@@ -309,7 +326,7 @@
     }
     
     // ==========================================
-    // 4. CAMERA THỜI GIAN THỰC & CHỨC NĂNG ZOOM (ĐÃ FIX GIỚI HẠN)
+    // 4. CAMERA THỜI GIAN THỰC & CHỨC NĂNG ZOOM
     // ==========================================
     const video = document.getElementById('videoFeed'); let isScanning = false;
     let videoTrack = null;
@@ -328,7 +345,6 @@
                 const capabilities = videoTrack.getCapabilities ? videoTrack.getCapabilities() : {};
                 if (capabilities.zoom) {
                     zoomSlider.min = capabilities.zoom.min;
-                    // FIX: Khống chế max zoom ở mức 3x để thanh trượt tận dụng hết không gian không bị liệt
                     zoomSlider.max = Math.min(capabilities.zoom.max, 3);
                     zoomSlider.step = capabilities.zoom.step || 0.1;
                     zoomSlider.value = capabilities.zoom.min;
@@ -510,7 +526,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('s') === '1') startCamera();
     }
-    const CURRENT_TERMS_VERSION = "36";
+    const CURRENT_TERMS_VERSION = "37";
     window.addEventListener('load', () => {
         const savedVersion = localStorage.getItem('soundcode_terms_version');
         if (!savedVersion || savedVersion !== CURRENT_TERMS_VERSION) {
